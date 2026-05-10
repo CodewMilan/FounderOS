@@ -9,6 +9,7 @@ import {
   Banknote,
   Settings,
   Zap,
+  Workflow,
 } from "lucide-react"
 import {
   Sidebar,
@@ -44,6 +45,11 @@ const navItems = [
     href: "/app/funding",
     label: "Funding",
     icon: Banknote,
+  },
+  {
+    href: "/app/workflows",
+    label: "Workflows",
+    icon: Workflow,
   },
 ]
 

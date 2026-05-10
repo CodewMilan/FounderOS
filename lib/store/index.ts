@@ -6,6 +6,8 @@ import type {
   ProspectRecord,
   ProspectBrief,
 } from "@/lib/schemas"
+import type { FounderProfile } from "@/lib/schemas/profile"
+import type { EnrichedCompetitor, CompetitorIntelState } from "@/lib/schemas/competitor-intel"
 import { seedSources, seedCompetitorChanges, seedProspects } from "@/lib/seed"
 import { seedSnapshots } from "@/lib/competitors/snapshots"
 
@@ -20,6 +22,10 @@ import { seedSnapshots } from "@/lib/competitors/snapshots"
  * with hot reload, the store re-initialises on module change. In production,
  * all API route invocations share the same store.
  */
+
+// Profile + competitor intel store (single slot — one profile per instance)
+let _founderProfile: FounderProfile | null = null
+let _competitorIntelState: CompetitorIntelState | null = null
 
 const _sources = new Map<string, Source>(seedSources.map((s) => [s.id, s]))
 const _extractions = new Map<string, RawExtraction>()
@@ -167,6 +173,8 @@ export const store = {
     _snapshots.clear()
     _prospects.clear()
     _briefs.clear()
+    _founderProfile = null
+    _competitorIntelState = null
     for (const [k, v] of _seedSources()) _sources.set(k, v)
     for (const [k, v] of _seedChanges()) _changes.set(k, v)
     for (const [k, v] of _seedSnaps()) _snapshots.set(k, v)
@@ -184,5 +192,84 @@ export const store = {
     _snapshots.clear()
     _prospects.clear()
     _briefs.clear()
+    _founderProfile = null
+    _competitorIntelState = null
+  },
+
+  profile: {
+    get(): FounderProfile | null {
+      return _founderProfile
+    },
+    set(profile: FounderProfile): void {
+      _founderProfile = profile
+    },
+    clear(): void {
+      _founderProfile = null
+    },
+  },
+
+  competitorIntel: {
+    get(): CompetitorIntelState | null {
+      return _competitorIntelState
+    },
+    set(state: CompetitorIntelState): void {
+      _competitorIntelState = state
+    },
+    setCompetitors(competitors: EnrichedCompetitor[]): void {
+      if (!_competitorIntelState) {
+        _competitorIntelState = {
+          competitors,
+          yourFeatures: [],
+          yourHasFreeTier: false,
+        }
+      } else {
+        _competitorIntelState = { ..._competitorIntelState, competitors }
+      }
+    },
+    addCompetitor(competitor: EnrichedCompetitor): void {
+      if (!_competitorIntelState) {
+        _competitorIntelState = {
+          competitors: [competitor],
+          yourFeatures: [],
+          yourHasFreeTier: false,
+        }
+      } else {
+        const existing = _competitorIntelState.competitors.find(
+          (c) => c.id === competitor.id
+        )
+        if (!existing) {
+          _competitorIntelState = {
+            ..._competitorIntelState,
+            competitors: [..._competitorIntelState.competitors, competitor],
+          }
+        }
+      }
+    },
+    removeCompetitor(id: string): void {
+      if (_competitorIntelState) {
+        _competitorIntelState = {
+          ..._competitorIntelState,
+          competitors: _competitorIntelState.competitors.filter((c) => c.id !== id),
+        }
+      }
+    },
+    updateCompetitor(id: string, update: Partial<EnrichedCompetitor>): void {
+      if (_competitorIntelState) {
+        _competitorIntelState = {
+          ..._competitorIntelState,
+          competitors: _competitorIntelState.competitors.map((c) =>
+            c.id === id ? { ...c, ...update } : c
+          ),
+        }
+      }
+    },
+    updateLastFetched(timestamp: string): void {
+      if (_competitorIntelState) {
+        _competitorIntelState = { ..._competitorIntelState, lastFetchedAt: timestamp }
+      }
+    },
+    clear(): void {
+      _competitorIntelState = null
+    },
   },
 }
