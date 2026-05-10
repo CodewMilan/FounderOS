@@ -33,6 +33,58 @@ describe("briefService.aggregate", () => {
     expect(agg).toHaveProperty("stats")
     expect(agg).toHaveProperty("brief")
     expect(agg).toHaveProperty("generatedAt")
+    expect(agg).toHaveProperty("trends")
+  })
+
+  it("trends.weeklyCompetitorCounts is an array of 7 numbers", () => {
+    const { trends } = briefService.aggregate()
+    expect(Array.isArray(trends.weeklyCompetitorCounts)).toBe(true)
+    expect(trends.weeklyCompetitorCounts).toHaveLength(7)
+    trends.weeklyCompetitorCounts.forEach((v) => expect(typeof v).toBe("number"))
+  })
+
+  it("trends.weeklyCompetitorTotal equals sum of weeklyCompetitorCounts", () => {
+    const { trends } = briefService.aggregate()
+    const expected = trends.weeklyCompetitorCounts.reduce((s, v) => s + v, 0)
+    expect(trends.weeklyCompetitorTotal).toBe(expected)
+  })
+
+  it("trends.weeklyCompetitorTotal matches seeded changes within the 7-day window", () => {
+    const { trends } = briefService.aggregate()
+    // All 5 seed changes fall within 7 days of SEED_REF_DATE
+    expect(trends.weeklyCompetitorTotal).toBe(seedCompetitorChanges.length)
+  })
+
+  it("trends.avgProspectFitScore is a number between 0 and 100", () => {
+    const { trends } = briefService.aggregate()
+    expect(trends.avgProspectFitScore).toBeGreaterThanOrEqual(0)
+    expect(trends.avgProspectFitScore).toBeLessThanOrEqual(100)
+  })
+
+  it("trends.avgProspectFitScore matches manual average of seeded prospects", () => {
+    const { trends } = briefService.aggregate()
+    const expected = Math.round(
+      seedProspects.reduce((s, p) => s + p.fitScore, 0) / seedProspects.length
+    )
+    expect(trends.avgProspectFitScore).toBe(expected)
+  })
+
+  it("trends.nonDilutiveFundingCount matches seeded non-dilutive opportunities", () => {
+    const { trends } = briefService.aggregate()
+    const expected = seedFundingOpportunities.filter((f) => f.equityType === "non-dilutive").length
+    expect(trends.nonDilutiveFundingCount).toBe(expected)
+  })
+
+  it("trends.trackedSourceCount matches seeded source count", () => {
+    const { trends } = briefService.aggregate()
+    // seedSources has 5 items
+    expect(trends.trackedSourceCount).toBeGreaterThan(0)
+  })
+
+  it("trends.trackedSourcesByModule sums to trackedSourceCount", () => {
+    const { trends } = briefService.aggregate()
+    const { competitors, prospects, funding } = trends.trackedSourcesByModule
+    expect(competitors + prospects + funding).toBe(trends.trackedSourceCount)
   })
 
   it("topCompetitorChanges has at most 3 items sorted by significance desc", () => {

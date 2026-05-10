@@ -1,4 +1,5 @@
 import { CompetitorFeed } from "@/components/app/competitor-feed"
+import { CompetitorAlertPanel } from "@/components/app/competitor-alert-panel"
 import { seedCompetitorChanges } from "@/lib/seed"
 
 /**
@@ -8,5 +9,10 @@ import { seedCompetitorChanges } from "@/lib/seed"
  * the Scan button.
  */
 export default function CompetitorsPage() {
-  return <CompetitorFeed initialChanges={seedCompetitorChanges} />
+  return (
+    <div className="flex flex-col gap-8">
+      <CompetitorAlertPanel />
+      <CompetitorFeed initialChanges={seedCompetitorChanges} />
+    </div>
+  )
 }

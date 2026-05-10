@@ -96,11 +96,12 @@ export const competitorService = {
   /**
    * Scan all competitor sources in the store.
    * For each source:
-   *   1. Ingest via the mock provider.
+   *   1. Ingest using the configured provider (Anakin, Jina, or mock).
    *   2. Run change detection against the stored snapshot.
    *   3. Persist any detected changes.
    *
-   * Returns a summary of the scan.
+   * Returns a summary of the scan. Individual source failures do not abort
+   * the full scan — errors are swallowed so other sources continue processing.
    */
   async scanAll(): Promise<ScanResult> {
     const competitorSources = sourceService
@@ -111,7 +112,9 @@ export const competitorService = {
 
     for (const source of competitorSources) {
       try {
-        const result = await ingestionService.ingest(source.id, "mock")
+        // Use the configured provider — no override means getProvider() reads
+        // SCRAPE_PROVIDER env var and falls back to mock if not set.
+        const result = await ingestionService.ingest(source.id)
         if (!result) continue
 
         // Derive a friendly competitor name from the source label

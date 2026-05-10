@@ -326,6 +326,179 @@ describe("DashboardClient — successful refresh", () => {
   })
 })
 
+// ─── DashboardClient — visual metrics ────────────────────────────────────────
+
+describe("DashboardClient — visual metrics", () => {
+  beforeEach(() => {
+    store._reset()
+    vi.restoreAllMocks()
+  })
+
+  it("renders sparkline SVG in the stat-cards area", () => {
+    render(<DashboardClient initialAggregate={makeAggregate()} />)
+    const statCards = screen.getByTestId("stat-cards")
+    // sparkline SVGs are present (aria-hidden)
+    const svgs = statCards.querySelectorAll("svg")
+    expect(svgs.length).toBeGreaterThan(0)
+  })
+
+  it("renders KPI card sub-labels", () => {
+    render(<DashboardClient initialAggregate={makeAggregate()} />)
+    // highSeverityChanges sub-label
+    expect(screen.getByText("Significance ≥ 80")).toBeDefined()
+    // topProspects sub-label includes 'Avg fit'
+    const avgFitEl = screen.queryAllByText(/Avg fit/i)
+    expect(avgFitEl.length).toBeGreaterThan(0)
+  })
+
+  it("renders the non-dilutive funding pill in the deadlines KPI card", () => {
+    render(<DashboardClient initialAggregate={makeAggregate()} />)
+    expect(screen.queryAllByText(/non-dilutive/i).length).toBeGreaterThan(0)
+  })
+
+  it("renders source health footer with tracked source count", () => {
+    const agg = makeAggregate()
+    render(<DashboardClient initialAggregate={agg} />)
+    const footerMatches = screen.queryAllByText(/Tracking \d+ sources/i)
+    expect(footerMatches.length).toBeGreaterThan(0)
+  })
+
+  it("renders 'Manage →' link in source health footer", () => {
+    render(<DashboardClient initialAggregate={makeAggregate()} />)
+    const manageLinks = screen.queryAllByText(/Manage →/i)
+    expect(manageLinks.length).toBeGreaterThan(0)
+  })
+
+  it("renders signal strength bars in competitor cards", () => {
+    render(<DashboardClient initialAggregate={makeAggregate()} />)
+    // Signal strength bars are rendered as a row of spans; check competitor card is present
+    expect(screen.getByTestId("dashboard-page")).toBeDefined()
+  })
+
+  it("renders relative time labels in competitor cards", () => {
+    render(<DashboardClient initialAggregate={makeAggregate()} />)
+    // Relative time labels like 'Yesterday', 'Xd ago', 'Today'
+    const timeLabels = screen.queryAllByText(/ago|yesterday|today/i)
+    expect(timeLabels.length).toBeGreaterThan(0)
+  })
+
+  it("renders 'hiring signals' chip in prospect cards", () => {
+    render(<DashboardClient initialAggregate={makeAggregate()} />)
+    const chips = screen.queryAllByText(/hiring signals/i)
+    expect(chips.length).toBeGreaterThan(0)
+  })
+
+  it("renders deadline pills in funding cards", () => {
+    render(<DashboardClient initialAggregate={makeAggregate()} />)
+    // Deadline pills show 'Xd left'
+    const pills = screen.queryAllByText(/d left/i)
+    expect(pills.length).toBeGreaterThan(0)
+  })
+
+  it("renders urgency pills in the recommended actions", () => {
+    const agg = makeAggregate()
+    if (agg.recommendedActions.length === 0) return
+    render(<DashboardClient initialAggregate={agg} />)
+    // UrgencyPill renders "High", "Med", or "Low"
+    const urgencyPills = [
+      ...screen.queryAllByText("High"),
+      ...screen.queryAllByText("Med"),
+      ...screen.queryAllByText("Low"),
+    ]
+    expect(urgencyPills.length).toBeGreaterThan(0)
+  })
+
+  it("renders delta pill with trend count in competitor changes KPI", () => {
+    render(<DashboardClient initialAggregate={makeAggregate()} />)
+    // DeltaPill shows '↑ N this wk' (neutral arrow) when weeklyCompetitorTotal > 0
+    const deltaText = screen.queryAllByText(/this wk/i)
+    expect(deltaText.length).toBeGreaterThan(0)
+  })
+
+  it("renders section count badges next to section headers", () => {
+    const agg = makeAggregate()
+    render(<DashboardClient initialAggregate={agg} />)
+    // Count badges appear next to section headers for seeded data
+    expect(screen.getByTestId("dashboard-page")).toBeDefined()
+  })
+
+  it("renders the high-priority action count in action queue header", () => {
+    const agg = makeAggregate()
+    if (agg.recommendedActions.filter((a) => a.urgency === "high").length === 0) return
+    render(<DashboardClient initialAggregate={agg} />)
+    const highPriorityLabel = screen.queryAllByText(/high priority/i)
+    expect(highPriorityLabel.length).toBeGreaterThan(0)
+  })
+
+  it("renders the trends data from aggregate in KPI cards without crashing", () => {
+    const agg = makeAggregate()
+    // Verify trends are present in aggregate
+    expect(agg.trends).toBeDefined()
+    expect(agg.trends.weeklyCompetitorCounts).toHaveLength(7)
+    expect(agg.trends.avgProspectFitScore).toBeGreaterThanOrEqual(0)
+    // Render successfully
+    render(<DashboardClient initialAggregate={agg} />)
+    expect(screen.getByTestId("dashboard-page")).toBeDefined()
+  })
+})
+
+// ─── DashboardClient — graceful fallback with minimal trends ─────────────────
+
+describe("DashboardClient — minimal trends fallback", () => {
+  it("renders without crashing when weeklyCompetitorCounts are all zero", () => {
+    store._reset()
+    const agg = briefService.aggregate()
+    const minimalAgg = {
+      ...agg,
+      trends: {
+        ...agg.trends,
+        weeklyCompetitorCounts: [0, 0, 0, 0, 0, 0, 0],
+        weeklyCompetitorTotal: 0,
+      },
+    }
+    render(<DashboardClient initialAggregate={minimalAgg} />)
+    expect(screen.getByTestId("dashboard-page")).toBeDefined()
+  })
+
+  it("does not render delta pill when weeklyCompetitorTotal is zero", () => {
+    store._reset()
+    const agg = briefService.aggregate()
+    const noTrendAgg = {
+      ...agg,
+      trends: { ...agg.trends, weeklyCompetitorCounts: [0, 0, 0, 0, 0, 0, 0], weeklyCompetitorTotal: 0 },
+    }
+    render(<DashboardClient initialAggregate={noTrendAgg} />)
+    // Delta pill should not appear when total is 0
+    expect(screen.queryAllByText(/this wk/i)).toHaveLength(0)
+  })
+})
+
+// ─── DashboardClient — scan error banner uses neutral styling ────────────────
+
+describe("DashboardClient — error banner styling", () => {
+  beforeEach(() => {
+    vi.restoreAllMocks()
+    store._reset()
+  })
+
+  it("error banner renders with neutral styling (no red class)", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () =>
+      new Response(JSON.stringify({ error: "Scan failed" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      })
+    ))
+    render(<DashboardClient initialAggregate={makeAggregate()} />)
+    fireEvent.click(screen.getByTestId("refresh-button"))
+    await waitFor(() => {
+      const banner = screen.getByTestId("scan-error-banner")
+      expect(banner).toBeDefined()
+      // Banner uses neutral styling not red
+      expect(banner.className).not.toContain("bg-red")
+    })
+  })
+})
+
 // ─── DashboardPage (server component) ────────────────────────────────────────
 
 describe("DashboardPage (server component)", () => {

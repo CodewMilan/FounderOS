@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest"
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { POST } from "@/app/api/dashboard/refresh/route"
 import { store } from "@/lib/store"
 import { seedCompetitorChanges, seedProspects, seedFundingOpportunities } from "@/lib/seed"
@@ -7,13 +7,17 @@ beforeEach(() => {
   store._reset()
 })
 
+afterEach(() => {
+  vi.unstubAllEnvs()
+})
+
 describe("POST /api/dashboard/refresh", () => {
   it("returns 200", async () => {
     const res = await POST()
     expect(res.status).toBe(200)
   })
 
-  it("returns a DashboardAggregate shape", async () => {
+  it("returns a DashboardAggregate shape including trends", async () => {
     const res = await POST()
     const body = await res.json() as Record<string, unknown>
     expect(body).toHaveProperty("topCompetitorChanges")
@@ -23,6 +27,18 @@ describe("POST /api/dashboard/refresh", () => {
     expect(body).toHaveProperty("stats")
     expect(body).toHaveProperty("brief")
     expect(body).toHaveProperty("generatedAt")
+    expect(body).toHaveProperty("trends")
+  })
+
+  it("trends field has required sub-keys", async () => {
+    const res = await POST()
+    const body = await res.json() as { trends: Record<string, unknown> }
+    expect(body.trends).toHaveProperty("weeklyCompetitorCounts")
+    expect(body.trends).toHaveProperty("weeklyCompetitorTotal")
+    expect(body.trends).toHaveProperty("avgProspectFitScore")
+    expect(body.trends).toHaveProperty("nonDilutiveFundingCount")
+    expect(body.trends).toHaveProperty("trackedSourceCount")
+    expect(body.trends).toHaveProperty("trackedSourcesByModule")
   })
 
   it("topCompetitorChanges is an array", async () => {
@@ -132,5 +148,57 @@ describe("POST /api/dashboard/refresh", () => {
     }
     expect(body.stats.competitorChanges).toBe(0)
     expect(body.topCompetitorChanges).toHaveLength(0)
+  })
+})
+
+// ─── Dynamic scan behavior ────────────────────────────────────────────────────
+
+describe("POST /api/dashboard/refresh — dynamic scan behavior", () => {
+  beforeEach(() => {
+    store._reset()
+  })
+
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
+  it("does not run the scan pipeline when SCRAPE_PROVIDER is not set", async () => {
+    // Without SCRAPE_PROVIDER, the route should skip the scan and return seeded data
+    vi.stubEnv("SCRAPE_PROVIDER", "")
+    const res = await POST()
+    expect(res.status).toBe(200)
+    const body = await res.json() as { stats: { competitorChanges: number } }
+    // Should still return the seeded count (scan was not run)
+    expect(body.stats.competitorChanges).toBe(seedCompetitorChanges.length)
+  })
+
+  it("does not run the scan pipeline when SCRAPE_PROVIDER=mock", async () => {
+    vi.stubEnv("SCRAPE_PROVIDER", "mock")
+    const res = await POST()
+    expect(res.status).toBe(200)
+    const body = await res.json() as { stats: { competitorChanges: number } }
+    expect(body.stats.competitorChanges).toBe(seedCompetitorChanges.length)
+  })
+
+  it("returns 200 with valid aggregate regardless of scan outcome", async () => {
+    // Even if SCRAPE_PROVIDER is set and a scan would run,
+    // the response must always be a valid aggregate
+    const res = await POST()
+    expect(res.status).toBe(200)
+    const body = await res.json() as Record<string, unknown>
+    expect(body).toHaveProperty("stats")
+    expect(body).toHaveProperty("brief")
+    expect(body).toHaveProperty("trends")
+  })
+
+  it("returns fallback data even when store is cleared", async () => {
+    store._clearAll()
+    const res = await POST()
+    expect(res.status).toBe(200)
+    const body = await res.json() as { stats: { competitorChanges: number }; brief: { bullets: unknown[] } }
+    // Cleared store — competitor count is 0 but brief still has at least one bullet
+    expect(body.stats.competitorChanges).toBe(0)
+    expect(Array.isArray(body.brief.bullets)).toBe(true)
+    expect(body.brief.bullets.length).toBeGreaterThan(0)
   })
 })

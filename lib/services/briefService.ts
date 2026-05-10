@@ -19,6 +19,21 @@ export interface RecommendedAction {
   urgency: "high" | "medium" | "low"
 }
 
+export interface DashboardTrends {
+  /** Competitor changes per day, last 7 days, oldest first (index 0 = 6 days ago). */
+  weeklyCompetitorCounts: number[]
+  /** Sum of weeklyCompetitorCounts. */
+  weeklyCompetitorTotal: number
+  /** Average fit score across all tracked prospects (0–100). */
+  avgProspectFitScore: number
+  /** Count of non-dilutive funding opportunities in the full dataset. */
+  nonDilutiveFundingCount: number
+  /** Total sources being tracked. */
+  trackedSourceCount: number
+  /** Sources grouped by module. */
+  trackedSourcesByModule: { competitors: number; prospects: number; funding: number }
+}
+
 export interface DashboardAggregate {
   topCompetitorChanges: CompetitorChange[]
   hotProspects: ProspectRecord[]
@@ -27,6 +42,7 @@ export interface DashboardAggregate {
   stats: DashboardStats
   brief: Brief
   generatedAt: string
+  trends: DashboardTrends
 }
 
 // ─── Date helpers ─────────────────────────────────────────────────────────────
@@ -74,6 +90,48 @@ export const briefService = {
       })
       .sort((a, b) => b.fitScore - a.fitScore)
       .slice(0, 3)
+
+    // ── Trends ───────────────────────────────────────────────────────────────
+    const DAY_MS = 24 * 60 * 60 * 1000
+    const weeklyCompetitorCounts = Array<number>(7).fill(0)
+    for (const change of allChanges) {
+      const daysAgo = Math.floor(
+        (refDate.getTime() - new Date(change.detectedAt).getTime()) / DAY_MS
+      )
+      if (daysAgo >= 0 && daysAgo < 7) {
+        weeklyCompetitorCounts[6 - daysAgo]++
+      }
+    }
+    const weeklyCompetitorTotal = weeklyCompetitorCounts.reduce((s, v) => s + v, 0)
+
+    const allProspectsForTrends = store.prospects.list()
+    const avgProspectFitScore =
+      allProspectsForTrends.length > 0
+        ? Math.round(
+            allProspectsForTrends.reduce((s, p) => s + p.fitScore, 0) /
+              allProspectsForTrends.length
+          )
+        : 0
+
+    const nonDilutiveFundingCount = seedFundingOpportunities.filter(
+      (f) => f.equityType === "non-dilutive"
+    ).length
+
+    const allSources = store.sources.list()
+    const trackedSourcesByModule = {
+      competitors: allSources.filter((s) => s.module === "competitors").length,
+      prospects: allSources.filter((s) => s.module === "prospects").length,
+      funding: allSources.filter((s) => s.module === "funding").length,
+    }
+
+    const trends: DashboardTrends = {
+      weeklyCompetitorCounts,
+      weeklyCompetitorTotal,
+      avgProspectFitScore,
+      nonDilutiveFundingCount,
+      trackedSourceCount: allSources.length,
+      trackedSourcesByModule,
+    }
 
     // ── Stats ────────────────────────────────────────────────────────────────
     const stats: DashboardStats = {
@@ -143,6 +201,7 @@ export const briefService = {
       stats,
       brief,
       generatedAt: new Date().toISOString(),
+      trends,
     }
   },
 
