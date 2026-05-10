@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Banknote, Clock } from "lucide-react"
+import { PageHeading } from "@/components/app/page-heading"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { FundingDetailSheet } from "@/components/app/signal-detail-sheet"
@@ -45,7 +46,7 @@ export default function FundingPage() {
   return (
     <div data-testid="funding-page" className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#37322F] font-sans tracking-tight">Funding Scout</h1>
+        <PageHeading>Funding Scout</PageHeading>
         <p className="text-sm text-[#605A57] mt-1">
           Programs and grants ranked by fit for{" "}
           <strong className="text-[#37322F]">{seedStartupProfile.startupName}</strong>{" "}

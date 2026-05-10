@@ -4,7 +4,7 @@ import { SaveFounderProfileSchema } from "@/lib/schemas/profile"
 
 export async function GET() {
   try {
-    const profile = profileService.get()
+    const profile = await profileService.get()
     return NextResponse.json({ profile: profile ?? null })
   } catch (err) {
     console.error("[GET /api/profile]", err)
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const profile = profileService.save(parsed.data)
+    const profile = await profileService.save(parsed.data)
     return NextResponse.json({ profile })
   } catch (err) {
     console.error("[POST /api/profile]", err)

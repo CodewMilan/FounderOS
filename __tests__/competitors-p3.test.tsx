@@ -83,13 +83,13 @@ describe("CompetitorFeed component", () => {
 // ─── CompetitorsPage (server component wrapping CompetitorFeed) ───────────────
 
 describe("CompetitorsPage (server component)", () => {
-  it("renders the competitors page container via the server component", () => {
-    render(<CompetitorsPage />)
+  it("renders the competitors page container via the server component", async () => {
+    render(await CompetitorsPage())
     expect(screen.getByTestId("competitors-page")).toBeDefined()
   })
 
-  it("renders all seeded records via the server component", () => {
-    render(<CompetitorsPage />)
+  it("renders all seeded records via the server component", async () => {
+    render(await CompetitorsPage())
     for (const change of seedCompetitorChanges) {
       expect(screen.getByText(change.competitorName)).toBeDefined()
     }

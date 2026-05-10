@@ -7,8 +7,8 @@ import { competitorIntelService } from "@/lib/services/competitorIntelService"
 import { mockCompetitorIntelState } from "@/lib/mocks/competitor-intel-mocks"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Radar, BarChart2, User } from "lucide-react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
+import { PageHeading } from "@/components/app/page-heading"
+import { PrimaryCtaButton } from "@/components/app/primary-cta-button"
 
 /**
  * Server component: provides seeded initial data to the client components.
@@ -17,12 +17,9 @@ import { Button } from "@/components/ui/button"
  *
  * If no founder profile is set, the Intelligence tab shows a CTA
  * to complete the profile first.
- *
- * Kept synchronous so existing tests continue to work — all service
- * calls are in-memory and return synchronously.
  */
-export default function CompetitorsPage() {
-  const profile = profileService.get()
+export default async function CompetitorsPage() {
+  const profile = await profileService.get()
 
   // Load intel state from store, fall back to mock if no profile
   const intelState = competitorIntelService.getState() ?? (profile ? mockCompetitorIntelState : null)
@@ -30,7 +27,7 @@ export default function CompetitorsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#37322F] tracking-tight">Competitors</h1>
+        <PageHeading>Competitors</PageHeading>
         <p className="text-sm text-[#605A57] mt-1">
           Track changes and analyse your competitive landscape.
         </p>
@@ -77,12 +74,7 @@ export default function CompetitorsPage() {
                   competitive intelligence.
                 </p>
               </div>
-              <Button
-                asChild
-                className="bg-[#37322F] hover:bg-[#49423D] text-white text-sm h-8 px-4"
-              >
-                <Link href="/app/profile">Complete your profile</Link>
-              </Button>
+              <PrimaryCtaButton href="/app/profile">Complete your profile</PrimaryCtaButton>
             </div>
           ) : intelState ? (
             <CompetitorIntelligencePanel

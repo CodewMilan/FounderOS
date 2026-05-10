@@ -97,35 +97,35 @@ describe("profileService", () => {
     store._reset()
   })
 
-  it("returns null when no profile is saved", () => {
-    expect(profileService.get()).toBeNull()
+  it("returns null when no profile is saved", async () => {
+    expect(await profileService.get()).toBeNull()
   })
 
-  it("saves and retrieves a valid profile", () => {
-    const saved = profileService.save(validInput)
+  it("saves and retrieves a valid profile", async () => {
+    const saved = await profileService.save(validInput)
     expect(saved.companyName).toBe("FounderOS")
     expect(saved.id).toBeDefined()
     expect(saved.createdAt).toBeDefined()
     expect(saved.updatedAt).toBeDefined()
   })
 
-  it("profileService.get() returns saved profile", () => {
-    profileService.save(validInput)
-    const p = profileService.get()
+  it("profileService.get() returns saved profile", async () => {
+    await profileService.save(validInput)
+    const p = await profileService.get()
     expect(p).not.toBeNull()
     expect(p?.companyName).toBe("FounderOS")
   })
 
-  it("overwrites profile on second save, preserving id and createdAt", () => {
-    const first = profileService.save(validInput)
-    const second = profileService.save({ ...validInput, companyName: "Updated" })
+  it("overwrites profile on second save, preserving id and createdAt", async () => {
+    const first = await profileService.save(validInput)
+    const second = await profileService.save({ ...validInput, companyName: "Updated" })
     expect(second.id).toBe(first.id)
     expect(second.createdAt).toBe(first.createdAt)
     expect(second.companyName).toBe("Updated")
   })
 
-  it("throws on invalid input", () => {
-    expect(() => profileService.save({ companyName: "" })).toThrow()
+  it("rejects on invalid input", async () => {
+    await expect(profileService.save({ companyName: "" })).rejects.toThrow()
   })
 })
 
@@ -301,7 +301,7 @@ describe("GET /api/profile", () => {
   })
 
   it("returns saved profile after profileService.save", async () => {
-    profileService.save(validInput)
+    await profileService.save(validInput)
     const { GET } = await import("@/app/api/profile/route")
     const res = await GET()
     const json = await res.json() as { profile: { companyName: string } }

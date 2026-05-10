@@ -6,6 +6,7 @@ import { FounderProfileView } from "@/components/app/founder-profile-view"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { FounderProfile } from "@/lib/schemas/profile"
 import { User } from "lucide-react"
+import { PageHeading } from "@/components/app/page-heading"
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<FounderProfile | null>(null)
@@ -35,7 +36,7 @@ export default function ProfilePage() {
       <div>
         <div className="flex items-center gap-2 mb-0.5">
           <User className="size-4 text-[#605A57]" />
-          <h1 className="text-2xl font-bold text-[#37322F] tracking-tight">Founder Profile</h1>
+          <PageHeading>Founder Profile</PageHeading>
         </div>
         <p className="text-sm text-[#605A57]">
           FounderOS uses this to auto-fetch competitors, suggest funding matches, and personalise

@@ -2,12 +2,13 @@ import { Settings } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { SourceManager } from "@/components/app/source-manager"
 import { seedStartupProfile } from "@/lib/seed"
+import { PageHeading } from "@/components/app/page-heading"
 
 export default function SettingsPage() {
   return (
     <div data-testid="settings-page" className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#37322F] font-sans tracking-tight">Settings</h1>
+        <PageHeading>Settings</PageHeading>
         <p className="text-sm text-[#605A57] mt-1">
           Manage your sources and startup profile.
         </p>

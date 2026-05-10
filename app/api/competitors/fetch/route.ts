@@ -8,7 +8,7 @@ export async function POST(request: Request) {
     const body: unknown = await request.json().catch(() => ({}))
     const _parsed = FetchCompetitorsRequestSchema.safeParse(body)
 
-    const profile = profileService.get()
+    const profile = await profileService.get()
     if (!profile) {
       return NextResponse.json(
         { error: "No founder profile found. Complete your profile first." },

@@ -108,12 +108,12 @@ describe("Dashboard page (/app route)", () => {
 })
 
 describe("Competitors page (/app/competitors route)", () => {
-  it("renders without crashing", () => {
-    render(<CompetitorsPage />)
+  it("renders without crashing", async () => {
+    render(await CompetitorsPage())
   })
 
-  it("renders the competitors page container", () => {
-    render(<CompetitorsPage />)
+  it("renders the competitors page container", async () => {
+    render(await CompetitorsPage())
     expect(screen.getByTestId("competitors-page")).toBeDefined()
   })
 })

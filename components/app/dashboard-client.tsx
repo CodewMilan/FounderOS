@@ -31,6 +31,7 @@ import {
   daysUntilDeadline,
 } from "@/lib/services/briefService"
 import { cn } from "@/lib/utils"
+import { PageHeading } from "@/components/app/page-heading"
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -258,7 +259,7 @@ export function DashboardClient({ initialAggregate }: DashboardClientProps) {
       {/* ── Page header ─────────────────────────────────────────────────────── */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#37322F] font-sans tracking-tight">Dashboard</h1>
+          <PageHeading>Dashboard</PageHeading>
           <p className="text-sm text-[#605A57] mt-1">
             Your founder intelligence brief for today.
           </p>

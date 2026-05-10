@@ -137,16 +137,16 @@ describe("competitorIntelService", () => {
   })
 
   it("fetchForProfile returns a state with competitors", async () => {
-    profileService.save(validSaveInput)
-    const profile = profileService.get()!
+    await profileService.save(validSaveInput)
+    const profile = (await profileService.get())!
     const state = await competitorIntelService.fetchForProfile(profile)
     expect(state.competitors.length).toBeGreaterThan(0)
     expect(state.lastFetchedAt).toBeDefined()
   })
 
   it("fetchForProfile stores state in store", async () => {
-    profileService.save(validSaveInput)
-    const profile = profileService.get()!
+    await profileService.save(validSaveInput)
+    const profile = (await profileService.get())!
     await competitorIntelService.fetchForProfile(profile)
     expect(store.competitorIntel.get()).not.toBeNull()
   })
@@ -208,7 +208,7 @@ describe("POST /api/competitors/fetch", () => {
   })
 
   it("returns 200 with state when profile exists", async () => {
-    profileService.save(validSaveInput)
+    await profileService.save(validSaveInput)
     const { POST } = await import("@/app/api/competitors/fetch/route")
     const req = new Request("http://localhost/api/competitors/fetch", {
       method: "POST",
