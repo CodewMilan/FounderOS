@@ -203,7 +203,7 @@ export const CompetitorSnapshotSchema = z.object({
 })
 export type CompetitorSnapshot = z.infer<typeof CompetitorSnapshotSchema>
 
-// ─── Phase 4: Sales Prospect Agent schemas ───────────────────────────────────
+// ─── Sales Prospect Agent schemas ────────────────────────────────────────────
 
 /** Estimated stage of a prospect company inferred from content signals. */
 export const LikelyStageSchema = z.enum([

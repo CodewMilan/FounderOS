@@ -10,7 +10,7 @@ import type { FundingOpportunity } from "@/lib/schemas"
 
 function daysUntil(dateStr: string): number {
   return Math.ceil(
-    (new Date(dateStr).getTime() - new Date("2026-05-10").getTime()) /
+    (new Date(dateStr).getTime() - Date.now()) /
       (1000 * 60 * 60 * 24)
   )
 }
