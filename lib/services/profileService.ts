@@ -9,6 +9,15 @@ function makeId(): string {
 
 // ─── Supabase row → FounderProfile ────────────────────────────────────────────
 
+/**
+ * Supabase returns timestamptz as "2026-05-10T09:50:00+00:00".
+ * Zod's z.string().datetime() requires the "Z" suffix format.
+ * Always convert to ISO 8601 UTC ("Z") before parsing.
+ */
+function toUtcIso(value: unknown): string {
+  return new Date(String(value)).toISOString()
+}
+
 function rowToProfile(row: Record<string, unknown>): FounderProfile {
   return FounderProfileSchema.parse({
     id: row.id,
@@ -24,8 +33,8 @@ function rowToProfile(row: Record<string, unknown>): FounderProfile {
     knownCompetitors: row.known_competitors ?? "",
     problemSolved: row.problem_solved ?? "",
     keyDifferentiator: row.key_differentiator ?? "",
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    createdAt: toUtcIso(row.created_at),
+    updatedAt: toUtcIso(row.updated_at),
   })
 }
 
@@ -47,10 +56,15 @@ export const profileService = {
         console.error("[profileService] Supabase get error:", error.message)
         // Fall through to in-memory store
       } else if (data) {
-        const profile = rowToProfile(data as Record<string, unknown>)
-        // Sync back into the in-memory store so the rest of the app can read it
-        store.profile.set(profile)
-        return profile
+        try {
+          const profile = rowToProfile(data as Record<string, unknown>)
+          // Sync back into the in-memory store so the rest of the app can read it
+          store.profile.set(profile)
+          return profile
+        } catch (parseErr) {
+          console.error("[profileService] Failed to parse Supabase row:", parseErr)
+          // Fall through to in-memory store
+        }
       } else {
         return null
       }
