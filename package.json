@@ -1,7 +1,9 @@
 {
-  "name": "my-v0-project",
+  "name": "founder-os",
   "version": "0.1.0",
   "private": true,
+  "description": "Founder intelligence platform — monitor competitors, research prospects, and discover funding from one shared command center.",
+  "license": "MIT",
   "scripts": {
     "build": "next build",
     "dev": "next dev",

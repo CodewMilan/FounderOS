@@ -1,14 +1,47 @@
 # FounderOS
 
-A founder intelligence platform that turns public web pages into structured business signals.
+**Founder intelligence, built for speed.**
 
-FounderOS helps startup founders and operators monitor competitors, research sales prospects, and discover relevant funding opportunities from one shared command center.
+FounderOS turns public web pages into structured startup signals. Monitor competitors, research sales prospects, and discover relevant funding opportunities — all from one shared command center.
 
-## Modules
+> Works out of the box. No external credentials required.
 
-- **Competitor Change Radar** — track pricing, hiring, product, and changelog updates across competitor pages
-- **Sales Prospect Agent** — analyze a company website and generate a structured prospect brief with fit scoring
-- **VC Grant Scout** — discover and rank grants, accelerators, and funding programs against your startup profile
+---
+
+## Overview
+
+FounderOS is a single Next.js application with three interconnected intelligence workflows:
+
+| Module | What it does |
+|---|---|
+| **Competitor Change Radar** | Tracks pricing, hiring, changelog, and product changes across competitor pages — scored and summarized |
+| **Sales Prospect Agent** | Analyzes a company website and produces a structured brief with fit score and recommended outreach angle |
+| **VC Grant Scout** | Finds and ranks grants, accelerators, and programs matched against your startup profile |
+
+All three modules share a unified data backbone: one source model, one ingestion pipeline, one dashboard.
+
+---
+
+## Screenshots
+
+The app ships with seeded demo data so every workflow is fully demonstrable the moment you run it.
+
+| Dashboard | Competitors | Prospects | Funding |
+|---|---|---|---|
+| Daily brief | Change feed | Prospect briefs | Matched programs |
+
+---
+
+## Tech stack
+
+- **Framework** — [Next.js 14](https://nextjs.org) (App Router)
+- **Language** — TypeScript 5
+- **UI** — [Tailwind CSS](https://tailwindcss.com) + [shadcn/ui](https://ui.shadcn.com) (Radix primitives)
+- **Validation** — [Zod](https://zod.dev)
+- **Testing** — [Vitest](https://vitest.dev) + [Testing Library](https://testing-library.com)
+- **Scraping** — pluggable provider interface (mock / [Anakin](https://anakin.ai) / [Jina AI](https://jina.ai/reader/))
+
+---
 
 ## Getting started
 
@@ -17,108 +50,158 @@ FounderOS helps startup founders and operators monitor competitors, research sal
 - Node.js 18+
 - npm or pnpm
 
-### Install dependencies
+### Install
 
 ```bash
-npm install
-# or
-pnpm install
+git clone https://github.com/your-org/founder-os.git
+cd founder-os
+npm install        # or: pnpm install
 ```
 
-### Run in development
-
-```bash
-npm run dev
-```
-
-The app runs on [http://localhost:3000](http://localhost:3000) and opens to the FounderOS dashboard.
-
-**No external credentials are required.** The app ships with seeded demo data and a mock scrape provider, so every workflow is fully demonstrable out of the box.
-
-## Environment variables
-
-Copy `.env.example` to `.env.local` and fill in the values you need.
+### Configure environment
 
 ```bash
 cp .env.example .env.local
 ```
 
+The defaults work without any changes. The app starts in mock mode and serves realistic seeded data with zero network calls.
+
+### Run
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000). The landing page links to the app at `/app`.
+
+---
+
+## Environment variables
+
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `SCRAPE_PROVIDER` | No | `mock` | Controls which scrape provider to use: `mock`, `anakin`, `real`, or `jina` |
-| `ANAKIN_API_KEY` | When using Anakin | — | API key for [Anakin URL Scraper](https://anakin.io) — required when `SCRAPE_PROVIDER=anakin` |
+| `SCRAPE_PROVIDER` | No | `mock` | Scrape backend: `mock`, `anakin`, `real`, or `jina` |
+| `ANAKIN_API_KEY` | When using Anakin | — | API key for [Anakin URL Scraper](https://anakin.ai) |
 | `ANAKIN_BASE_URL` | No | `https://api.anakin.io` | Override the Anakin API base URL |
-| `JINA_API_KEY` | No | — | Optional API key for [Jina AI Reader](https://jina.ai/reader/) — increases rate limits when `SCRAPE_PROVIDER=real` |
+| `JINA_API_KEY` | No | — | Optional key for [Jina AI Reader](https://jina.ai/reader/) — raises rate limits |
+| `OPENAI_API_KEY` | No | — | OpenAI key for brief generation |
+| `OPENAI_MODEL` | No | `gpt-4.1-mini` | OpenAI model to use |
+| `TELEGRAM_BOT_TOKEN` | No | — | Telegram bot for workflow notifications |
+| `TELEGRAM_CHAT_ID` | No | — | Telegram chat to receive alerts |
+| `SLACK_WEBHOOK_URL` | No | — | Slack webhook for competitor alerts |
+| `USER_SITE_URL` | No | — | Your product URL — used for feature-gap comparisons |
 
-### Demo mode (default)
+### Scrape providers
 
-When `SCRAPE_PROVIDER` is unset or set to `mock`, the app uses the built-in mock provider. All scrape operations return realistic fixture data instantly. No network calls are made. This is the correct mode for demos and development.
+**Mock (default)** — No credentials needed. Returns realistic fixture data keyed to URL patterns. Best for development and demos.
 
-### Anakin provider (recommended for live use)
-
-[Anakin](https://anakin.io) is a production-grade scraping API with anti-detection, proxy routing across 207 countries, intelligent caching, and optional AI JSON extraction.
-
-Set `SCRAPE_PROVIDER=anakin` and provide your API key:
+**Anakin** — Production-grade scraping with anti-detection, proxy routing across 207 countries, and intelligent caching. Uses an async job pattern with 3-second polling up to a 90-second timeout.
 
 ```
 SCRAPE_PROVIDER=anakin
-ANAKIN_API_KEY=ask_your_key_here
+ANAKIN_API_KEY=your_key_here
 ```
 
-The Anakin provider uses an async job pattern: it submits a scrape job and polls every 3 seconds until the job completes (up to 90 seconds timeout). Returns clean markdown content.
-
-### Jina provider (lightweight alternative)
-
-Set `SCRAPE_PROVIDER=real` or `SCRAPE_PROVIDER=jina` to route scrape operations through [Jina AI Reader](https://r.jina.ai/). Basic usage is free with no API key.
+**Jina AI** — Lightweight alternative. Basic usage is free with no key.
 
 ```
 SCRAPE_PROVIDER=real
-JINA_API_KEY=your_key_here   # optional, raises rate limits
+JINA_API_KEY=your_key_here   # optional
 ```
 
-The app automatically falls back to mock mode if `SCRAPE_PROVIDER` is unset, empty, or set to an unrecognised value.
+The app automatically falls back to mock mode if `SCRAPE_PROVIDER` is unset or unrecognised.
+
+---
 
 ## Commands
 
 ```bash
-npm run dev          # start development server
+npm run dev          # start development server (http://localhost:3000)
 npm run build        # production build
+npm run start        # start production server
 npm run lint         # ESLint
 npm run typecheck    # TypeScript type check (no emit)
 npm run test         # run all tests once
 npm run test:watch   # run tests in watch mode
 ```
 
+---
+
 ## Project structure
 
 ```
 app/
   (app)/
-    dashboard/       # founder intelligence brief
-    competitors/     # competitor change feed
-    prospects/       # sales prospect analysis
+    dashboard/       # daily founder brief
+    competitors/     # competitor change feed and detail
+    prospects/       # prospect analysis and briefs
     funding/         # grant and program scout
     settings/        # source management and startup profile
   api/
     sources/         # source CRUD
-    ingest/          # single-source ingestion
-    competitors/     # change listing and scan trigger
+    ingest/          # single-source ingestion trigger
+    competitors/     # change listing and scan
     prospects/       # prospect analysis and brief generation
     dashboard/       # aggregate refresh
 
-components/app/      # product UI components
+components/
+  app/               # product UI components (nav, cards, panels, tables)
+  ui/                # shadcn/ui primitives
+
 lib/
-  providers/         # ScrapeProvider interface + mock + Jina Real adapter
+  providers/         # ScrapeProvider interface + mock + Jina + Anakin adapters
   schemas/           # Zod schemas for all domain models
   services/          # business logic (source, ingest, competitor, prospect, funding, brief)
   seed/              # demo fixtures
-  store/             # in-memory store seeded with demo data
+  store/             # in-memory store pre-seeded with demo data
+  workflows/         # multi-step approval-gated workflows
+
+__tests__/           # Vitest test suite (schemas, services, routes, UI)
 ```
+
+---
 
 ## Architecture
 
-The app follows a shared pipeline: **source → provider → raw extraction → module extractor → scored entity → UI**.
+All scraping is hidden behind a `ScrapeProvider` interface (`lib/providers/types.ts`). Switching from mock to a live provider requires only a single environment variable — no code changes.
 
-All scraping is hidden behind the `ScrapeProvider` interface (`lib/providers/types.ts`). The default mock provider serves realistic fixture content keyed on URL patterns. Swapping to the real provider requires only the `SCRAPE_PROVIDER=real` environment variable.
+The shared pipeline for every module:
 
-See [architecture.md](./architecture.md) for the full system design.
+```
+Source URL
+  → ScrapeProvider.scrapeUrl()
+  → RawExtraction (normalized markdown + metadata)
+  → Module extractor (competitor / prospect / funding)
+  → Scored entity + signal
+  → Dashboard brief + module detail view
+```
+
+Key design principles:
+- **Mock-first** — the app is fully usable without credentials
+- **Thin routes** — API handlers validate and delegate; business logic lives in services
+- **Zod at the boundary** — all incoming data and inter-module contracts are validated
+- **One shared domain model** — `Source`, `RawExtraction`, `Entity`, `Signal`, `Brief`
+
+See [`architecture.md`](./architecture.md) for the full system design and domain model.
+
+---
+
+## Contributing
+
+Contributions are welcome. Please read [`CONTRIBUTING.md`](./CONTRIBUTING.md) before opening a pull request.
+
+Quick checklist before submitting:
+
+```bash
+npm run lint
+npm run typecheck
+npm run test
+```
+
+All three must pass with no errors.
+
+---
+
+## License
+
+MIT — see [`LICENSE`](./LICENSE) for details.
