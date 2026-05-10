@@ -65,18 +65,18 @@ function SectionHeader({
 }) {
   return (
     <div className="flex items-center justify-between">
-      <div className="flex items-center gap-1.5 text-xs font-semibold text-[#37322F]">
+      <div className="flex items-center gap-2 text-sm font-semibold text-[#37322F]">
         {icon}
         {label}
         {count !== undefined && count > 0 && (
-          <span className="ml-0.5 inline-flex items-center rounded-full bg-[rgba(55,50,47,0.06)] px-1.5 py-0.5 text-[10px] font-medium text-[#605A57]">
+          <span className="ml-0.5 inline-flex items-center rounded-full bg-[rgba(55,50,47,0.06)] px-1.5 py-0.5 text-xs font-medium text-[#605A57]">
             {count}
           </span>
         )}
       </div>
       <Link
         href={href}
-        className="text-[10px] text-[#828387] hover:text-[#37322F] transition-colors"
+        className="text-xs text-[#828387] hover:text-[#37322F] transition-colors"
       >
         View all →
       </Link>
@@ -129,11 +129,11 @@ function EmptySection({
   linkLabel: string
 }) {
   return (
-    <div className="rounded-lg border border-dashed border-[rgba(55,50,47,0.15)] px-4 py-5 text-center">
-      <p className="text-xs text-[#828387]">{message}</p>
+    <div className="rounded-lg border border-dashed border-[rgba(55,50,47,0.15)] px-4 py-6 text-center">
+      <p className="text-sm text-[#828387]">{message}</p>
       <Link
         href={href}
-        className="mt-2 inline-flex items-center gap-0.5 text-[10px] text-[#605A57] hover:text-[#37322F] transition-colors"
+        className="mt-2 inline-flex items-center gap-0.5 text-xs text-[#605A57] hover:text-[#37322F] transition-colors"
       >
         {linkLabel}
         <ChevronRight className="size-3" />
@@ -184,7 +184,7 @@ function KpiCard({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               {icon}
-              <CardDescription className="text-xs text-[#605A57]">{label}</CardDescription>
+              <CardDescription className="text-sm text-[#605A57]">{label}</CardDescription>
             </div>
             {sparkline && (
               <span className="text-[#605A57]">
@@ -193,7 +193,7 @@ function KpiCard({
             )}
           </div>
           <div className="flex items-end justify-between gap-2 mt-0.5">
-            <CardTitle className="text-2xl font-semibold text-[#37322F] tabular-nums">
+            <CardTitle className="text-3xl font-bold text-[#37322F] tabular-nums">
               {value}
             </CardTitle>
             {pill}
@@ -258,8 +258,8 @@ export function DashboardClient({ initialAggregate }: DashboardClientProps) {
       {/* ── Page header ─────────────────────────────────────────────────────── */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-[#37322F] font-sans">Dashboard</h1>
-          <p className="text-sm text-[#605A57] mt-0.5">
+          <h1 className="text-2xl font-bold text-[#37322F] font-sans tracking-tight">Dashboard</h1>
+          <p className="text-sm text-[#605A57] mt-1">
             Your founder intelligence brief for today.
           </p>
         </div>
@@ -390,7 +390,7 @@ export function DashboardClient({ initialAggregate }: DashboardClientProps) {
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
               <TrendingUp className="size-4 text-[#605A57]" />
-              <CardTitle className="text-sm font-semibold text-[#37322F]">
+              <CardTitle className="text-base font-semibold text-[#37322F]">
                 {brief.title}
               </CardTitle>
             </div>
@@ -414,11 +414,11 @@ export function DashboardClient({ initialAggregate }: DashboardClientProps) {
       {/* ── Row 3: Recommended actions ───────────────────────────────────────── */}
       {!scanning && recommendedActions.length > 0 && (
         <div className="flex flex-col gap-3" data-testid="recommended-actions">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-[#37322F]">
-            <Zap className="size-3.5" />
+          <div className="flex items-center gap-2 text-sm font-semibold text-[#37322F]">
+            <Zap className="size-4" />
             Recommended actions
             {highPriorityActions > 0 && (
-              <span className="ml-auto inline-flex items-center rounded-full border border-[rgba(55,50,47,0.12)] bg-[rgba(55,50,47,0.04)] px-1.5 py-0.5 text-[10px] font-medium text-[#605A57]">
+              <span className="ml-auto inline-flex items-center rounded-full border border-[rgba(55,50,47,0.12)] bg-[rgba(55,50,47,0.04)] px-1.5 py-0.5 text-xs font-medium text-[#605A57]">
                 {highPriorityActions} high priority
               </span>
             )}
@@ -426,7 +426,7 @@ export function DashboardClient({ initialAggregate }: DashboardClientProps) {
           <div className="flex flex-col gap-1.5">
             {recommendedActions.map((action) => (
               <Link key={action.id} href={MODULE_HREFS[action.module]}>
-                <div className="flex items-center gap-2.5 rounded-lg border border-[rgba(55,50,47,0.12)] bg-white px-3.5 py-2.5 text-xs text-[#49423D] leading-relaxed hover:bg-[rgba(55,50,47,0.02)] transition-colors cursor-pointer">
+                <div className="flex items-center gap-2.5 rounded-lg border border-[rgba(55,50,47,0.12)] bg-white px-3.5 py-3 text-sm text-[#49423D] leading-relaxed hover:bg-[rgba(55,50,47,0.02)] transition-colors cursor-pointer">
                   <UrgencyPill urgency={action.urgency} />
                   <span className="flex-1 min-w-0 leading-snug">{action.label}</span>
                   <div className="flex items-center gap-1 shrink-0 text-[#828387]">
@@ -471,7 +471,7 @@ export function DashboardClient({ initialAggregate }: DashboardClientProps) {
                 >
                   <CardHeader className="pb-0">
                     <div className="flex items-start justify-between gap-2">
-                      <span className="text-xs font-semibold text-[#37322F] leading-tight">
+                      <span className="text-sm font-semibold text-[#37322F] leading-tight">
                         {change.competitorName}
                       </span>
                       <div className="flex items-center gap-1 shrink-0">
@@ -538,7 +538,7 @@ export function DashboardClient({ initialAggregate }: DashboardClientProps) {
                 >
                   <CardHeader className="pb-1">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-[#37322F]">
+                      <span className="text-sm font-semibold text-[#37322F]">
                         {prospect.companyName}
                       </span>
                       <span className="text-xs font-medium tabular-nums text-[#605A57]">
@@ -599,7 +599,7 @@ export function DashboardClient({ initialAggregate }: DashboardClientProps) {
                   >
                     <CardHeader className="pb-1">
                       <div className="flex items-start justify-between gap-2">
-                        <span className="text-xs font-semibold text-[#37322F] leading-tight">
+                        <span className="text-sm font-semibold text-[#37322F] leading-tight">
                           {opp.programName}
                         </span>
                         {days !== null && <DeadlinePill days={days} />}
@@ -635,23 +635,23 @@ export function DashboardClient({ initialAggregate }: DashboardClientProps) {
       </div>
 
       {/* ── Source health footer ─────────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[rgba(55,50,47,0.08)] bg-[rgba(55,50,47,0.015)] px-4 py-2.5">
-        <span className="text-[10px] text-[#605A57]">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[rgba(55,50,47,0.08)] bg-[rgba(55,50,47,0.015)] px-4 py-3">
+        <span className="text-xs text-[#605A57]">
           Tracking {trends.trackedSourceCount} sources
         </span>
         <div className="flex items-center gap-4">
-          <span className="text-[10px] text-[#828387]">
+          <span className="text-xs text-[#828387]">
             {trends.trackedSourcesByModule.competitors} competitor
           </span>
-          <span className="text-[10px] text-[#828387]">
+          <span className="text-xs text-[#828387]">
             {trends.trackedSourcesByModule.prospects} prospect
           </span>
-          <span className="text-[10px] text-[#828387]">
+          <span className="text-xs text-[#828387]">
             {trends.trackedSourcesByModule.funding} funding
           </span>
           <Link
             href="/settings"
-            className="text-[10px] text-[#828387] hover:text-[#37322F] transition-colors"
+            className="text-xs text-[#828387] hover:text-[#37322F] transition-colors"
           >
             Manage →
           </Link>

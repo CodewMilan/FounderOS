@@ -112,8 +112,8 @@ export function CompetitorFeed({ initialChanges }: CompetitorFeedProps) {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-[#37322F] font-sans">Competitor Radar</h1>
-          <p className="text-sm text-[#605A57] mt-0.5">
+          <h1 className="text-2xl font-bold text-[#37322F] font-sans tracking-tight">Competitor Radar</h1>
+          <p className="text-sm text-[#605A57] mt-1">
             Tracked changes across competitor pricing, product, and hiring pages.
           </p>
         </div>

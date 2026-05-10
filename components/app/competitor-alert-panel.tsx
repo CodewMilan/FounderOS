@@ -122,15 +122,15 @@ export function CompetitorAlertPanel() {
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
-          <div className="flex flex-col gap-0.5">
+          <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
-              <Zap className="size-3.5 text-[#37322F]" />
-              <span className="text-sm font-semibold text-[#37322F]">
+              <Zap className="size-4 text-[#37322F]" />
+              <span className="text-base font-semibold text-[#37322F]">
                 Competitor Intelligence Alert
               </span>
               <StatusBadge status={state.status} />
             </div>
-            <p className="text-xs text-[#605A57]">
+            <p className="text-sm text-[#605A57]">
               Scrape a competitor site, analyze it with AI, and send a brief to Telegram.
             </p>
           </div>
@@ -140,7 +140,7 @@ export function CompetitorAlertPanel() {
       <CardContent className="flex flex-col gap-3">
         {/* Competitor URL */}
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-[#37322F]">Competitor URL</label>
+          <label className="text-sm font-medium text-[#37322F]">Competitor URL</label>
           <Input
             type="url"
             placeholder="https://competitor.com"
@@ -154,7 +154,7 @@ export function CompetitorAlertPanel() {
 
         {/* Your site URL */}
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-[#37322F]">
+          <label className="text-sm font-medium text-[#37322F]">
             Your site URL{" "}
             <span className="font-normal text-[#828387]">(optional — used for comparison)</span>
           </label>
@@ -171,7 +171,7 @@ export function CompetitorAlertPanel() {
 
         {/* Workflow type */}
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-[#37322F]">Alert type</label>
+          <label className="text-sm font-medium text-[#37322F]">Alert type</label>
           <select
             value={workflowType}
             onChange={(e) => setWorkflowType(e.target.value as WorkflowType)}
@@ -230,7 +230,7 @@ export function CompetitorAlertPanel() {
             className="flex flex-col gap-2 rounded-lg border border-[rgba(55,50,47,0.12)] bg-[rgba(55,50,47,0.015)] px-4 py-3"
           >
             <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold text-[#37322F]">Generated brief</p>
+              <p className="text-sm font-semibold text-[#37322F]">Generated brief</p>
               <div className="flex items-center gap-2">
                 <Badge
                   variant="outline"

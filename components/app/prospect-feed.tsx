@@ -68,7 +68,7 @@ function AnalyzeForm({ onSuccess, onDismiss }: AnalyzeFormProps) {
       className="rounded-lg border border-[rgba(55,50,47,0.12)] bg-[rgba(55,50,47,0.015)] px-4 py-4"
     >
       <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-semibold text-[#37322F]">Analyze a company</p>
+        <p className="text-sm font-semibold text-[#37322F]">Analyze a company</p>
         <button
           onClick={onDismiss}
           aria-label="Close"
@@ -186,8 +186,8 @@ export function ProspectFeed({ initialProspects }: ProspectFeedProps) {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-[#37322F] font-sans">Prospects</h1>
-          <p className="text-sm text-[#605A57] mt-0.5">
+          <h1 className="text-2xl font-bold text-[#37322F] font-sans tracking-tight">Prospects</h1>
+          <p className="text-sm text-[#605A57] mt-1">
             Analyzed companies ranked by outreach fit for your startup.
           </p>
         </div>

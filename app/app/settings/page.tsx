@@ -7,8 +7,8 @@ export default function SettingsPage() {
   return (
     <div data-testid="settings-page" className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold text-[#37322F] font-sans">Settings</h1>
-        <p className="text-sm text-[#605A57] mt-0.5">
+        <h1 className="text-2xl font-bold text-[#37322F] font-sans tracking-tight">Settings</h1>
+        <p className="text-sm text-[#605A57] mt-1">
           Manage your sources and startup profile.
         </p>
       </div>
@@ -17,11 +17,11 @@ export default function SettingsPage() {
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
             <Settings className="size-4 text-[#605A57]" />
-            <CardTitle className="text-sm font-semibold text-[#37322F]">
+            <CardTitle className="text-base font-semibold text-[#37322F]">
               Startup Profile
             </CardTitle>
           </div>
-          <CardDescription className="text-xs text-[#605A57]">
+          <CardDescription className="text-sm text-[#605A57]">
             Used to rank funding opportunities and personalize signals.
           </CardDescription>
         </CardHeader>
@@ -52,11 +52,11 @@ export default function SettingsPage() {
 
 function ProfileField({ label, value }: { label: string; value: string }) {
   return (
-    <div className="space-y-0.5">
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-[#828387]">
+    <div className="space-y-1">
+      <p className="text-xs font-semibold uppercase tracking-wider text-[#828387]">
         {label}
       </p>
-      <p className="text-sm text-[#49423D]">{value}</p>
+      <p className="text-sm font-medium text-[#49423D]">{value}</p>
     </div>
   )
 }

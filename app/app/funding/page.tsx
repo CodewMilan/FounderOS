@@ -45,8 +45,8 @@ export default function FundingPage() {
   return (
     <div data-testid="funding-page" className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold text-[#37322F] font-sans">Funding Scout</h1>
-        <p className="text-sm text-[#605A57] mt-0.5">
+        <h1 className="text-2xl font-bold text-[#37322F] font-sans tracking-tight">Funding Scout</h1>
+        <p className="text-sm text-[#605A57] mt-1">
           Programs and grants ranked by fit for{" "}
           <strong className="text-[#37322F]">{seedStartupProfile.startupName}</strong>{" "}
           ({seedStartupProfile.stage} · {seedStartupProfile.sector}).

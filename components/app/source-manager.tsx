@@ -177,11 +177,11 @@ export function SourceManager() {
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
             <Plus className="size-4 text-[#605A57]" />
-            <CardTitle className="text-sm font-semibold text-[#37322F]">
+            <CardTitle className="text-base font-semibold text-[#37322F]">
               Add a source
             </CardTitle>
           </div>
-          <CardDescription className="text-xs text-[#605A57]">
+          <CardDescription className="text-sm text-[#605A57]">
             Track a public URL for competitor changes, prospect research, or funding discovery.
           </CardDescription>
         </CardHeader>
@@ -189,7 +189,7 @@ export function SourceManager() {
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="flex flex-col gap-1.5">
-                <Label className="text-xs text-[#605A57]" htmlFor="src-label">
+                <Label className="text-sm text-[#605A57]" htmlFor="src-label">
                   Label
                 </Label>
                 <Input
@@ -201,7 +201,7 @@ export function SourceManager() {
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label className="text-xs text-[#605A57]" htmlFor="src-url">
+                <Label className="text-sm text-[#605A57]" htmlFor="src-url">
                   URL
                 </Label>
                 <Input
@@ -216,7 +216,7 @@ export function SourceManager() {
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <div className="flex flex-col gap-1.5">
-                <Label className="text-xs text-[#605A57]">Module</Label>
+                <Label className="text-sm text-[#605A57]">Module</Label>
                 <Select
                   value={form.module}
                   onValueChange={(v) =>
@@ -238,7 +238,7 @@ export function SourceManager() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <Label className="text-xs text-[#605A57]">Type</Label>
+                <Label className="text-sm text-[#605A57]">Type</Label>
                 <Select
                   value={form.type}
                   onValueChange={(v) =>
@@ -257,7 +257,7 @@ export function SourceManager() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <Label className="text-xs text-[#605A57]" htmlFor="src-tags">
+                <Label className="text-sm text-[#605A57]" htmlFor="src-tags">
                   Tags{" "}
                   <span className="text-[#828387] font-normal">(comma-separated)</span>
                 </Label>
@@ -272,8 +272,8 @@ export function SourceManager() {
             </div>
 
             {formError && (
-              <p className="text-xs text-red-600 flex items-center gap-1">
-                <AlertCircle className="size-3" />
+              <p className="text-sm text-red-600 flex items-center gap-1">
+                <AlertCircle className="size-3.5" />
                 {formError}
               </p>
             )}
@@ -282,7 +282,7 @@ export function SourceManager() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="inline-flex h-8 items-center gap-1.5 rounded-full bg-[#37322F] px-5 text-xs font-medium text-white transition-colors hover:bg-[#49423D] disabled:opacity-60 disabled:cursor-not-allowed"
+                className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#37322F] px-5 text-sm font-medium text-white transition-colors hover:bg-[#49423D] disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {submitting ? (
                   <Loader2 className="size-3 animate-spin" />
@@ -299,7 +299,7 @@ export function SourceManager() {
       {/* Source list */}
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-[#37322F]">
+          <h2 className="text-base font-semibold text-[#37322F]">
             Monitored Sources
           </h2>
           {loading && (
@@ -351,7 +351,7 @@ function SourceGroup({
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-xs font-medium text-[#605A57]">{label}</p>
+      <p className="text-sm font-semibold text-[#605A57]">{label}</p>
       {sources.map((source) => (
         <SourceRow
           key={source.id}
