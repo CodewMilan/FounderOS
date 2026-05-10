@@ -8,9 +8,12 @@
  *   - JinaReaderProvider with fully-mocked fetch (no live network calls)
  *   - JINA_API_KEY header presence/absence
  *   - Error and timeout handling in JinaReaderProvider
+ *   - AnakinScrapeProvider submit+poll pattern (mocked fetch)
+ *   - Anakin error and timeout handling
  */
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest"
 import { getProvider } from "@/lib/providers"
+import { AnakinScrapeProvider } from "@/lib/providers/anakin"
 import { RawExtractionSchema } from "@/lib/schemas"
 
 afterEach(() => {
@@ -350,5 +353,318 @@ describe("JinaReaderProvider.scrapeMany", () => {
     const provider = getProvider("real")
     const results = await provider.scrapeMany(["https://a.com", "https://b.com"])
     expect(results).toHaveLength(2)
+  })
+})
+
+// ─── getProvider — Anakin provider selection ──────────────────────────────────
+
+describe("getProvider — Anakin provider selection", () => {
+  it("returns Anakin provider when SCRAPE_PROVIDER=anakin", () => {
+    vi.stubEnv("SCRAPE_PROVIDER", "anakin")
+    const provider = getProvider()
+    expect(provider.name).toBe("anakin")
+  })
+
+  it("returns Anakin provider when nameOverride=anakin", () => {
+    const provider = getProvider("anakin")
+    expect(provider.name).toBe("anakin")
+  })
+
+  it("nameOverride=anakin beats SCRAPE_PROVIDER=mock", () => {
+    vi.stubEnv("SCRAPE_PROVIDER", "mock")
+    const provider = getProvider("anakin")
+    expect(provider.name).toBe("anakin")
+  })
+
+  it("returns jina-reader when SCRAPE_PROVIDER=real (no ANAKIN_API_KEY)", () => {
+    vi.stubEnv("SCRAPE_PROVIDER", "real")
+    vi.stubEnv("ANAKIN_API_KEY", "")
+    const provider = getProvider()
+    expect(provider.name).toBe("jina-reader")
+  })
+
+  it("returns jina-reader when SCRAPE_PROVIDER=jina", () => {
+    vi.stubEnv("SCRAPE_PROVIDER", "jina")
+    const provider = getProvider()
+    expect(provider.name).toBe("jina-reader")
+  })
+
+  it("each call to getProvider('anakin') creates a fresh instance", () => {
+    const a = getProvider("anakin")
+    const b = getProvider("anakin")
+    expect(a).not.toBe(b)
+  })
+})
+
+// ─── AnakinScrapeProvider helpers ─────────────────────────────────────────────
+
+/**
+ * Returns an AnakinScrapeProvider wired with zero poll delay for fast tests.
+ * All network calls must be covered by a vi.stubGlobal("fetch", …) before use.
+ */
+function makeAnakin() {
+  return new AnakinScrapeProvider({ pollIntervalMs: 0, pollTimeoutMs: 5_000 })
+}
+
+/**
+ * Build a fetch mock that simulates the Anakin async job pattern:
+ *   call 1 (POST submit) → { jobId, status: "pending" }
+ *   call 2 (GET poll)    → supplied result shape
+ */
+function makeFetchSequence(pollResult: Record<string, unknown>) {
+  return vi.fn()
+    .mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ jobId: "job_test_123", status: "pending" }),
+    })
+    .mockResolvedValueOnce({
+      ok: true,
+      json: async () => pollResult,
+    })
+}
+
+// ─── AnakinScrapeProvider — submit step ───────────────────────────────────────
+
+describe("AnakinScrapeProvider — submit step", () => {
+  it("POSTs to /v1/url-scraper with the correct URL", async () => {
+    vi.stubGlobal("fetch", makeFetchSequence({ status: "completed", markdown: "# OK", url: "https://example.com" }))
+
+    const provider = makeAnakin()
+    await provider.scrapeUrl("https://example.com")
+
+    const [submitUrl, submitOpts] = (vi.mocked(fetch) as ReturnType<typeof vi.fn>).mock.calls[0] as [string, RequestInit]
+    expect(submitUrl).toContain("/v1/url-scraper")
+    expect(submitOpts.method).toBe("POST")
+  })
+
+  it("sends X-API-Key header on submit", async () => {
+    vi.stubEnv("ANAKIN_API_KEY", "test-anakin-key")
+    vi.stubGlobal("fetch", makeFetchSequence({ status: "completed", markdown: "# OK", url: "https://example.com" }))
+
+    // Re-create after stubbing env
+    const provider = new AnakinScrapeProvider({ pollIntervalMs: 0, pollTimeoutMs: 5_000 })
+    await provider.scrapeUrl("https://example.com")
+
+    const [, submitOpts] = (vi.mocked(fetch) as ReturnType<typeof vi.fn>).mock.calls[0] as [string, RequestInit & { headers: Record<string, string> }]
+    expect(submitOpts.headers?.["X-API-Key"]).toBe("test-anakin-key")
+  })
+
+  it("includes the target URL in the POST body", async () => {
+    vi.stubGlobal("fetch", makeFetchSequence({ status: "completed", markdown: "# OK", url: "https://example.com/pricing" }))
+
+    const provider = makeAnakin()
+    await provider.scrapeUrl("https://example.com/pricing")
+
+    const [, submitOpts] = (vi.mocked(fetch) as ReturnType<typeof vi.fn>).mock.calls[0] as [string, RequestInit]
+    const body = JSON.parse(submitOpts.body as string) as { url: string }
+    expect(body.url).toBe("https://example.com/pricing")
+  })
+
+  it("returns status=error when submit returns non-OK HTTP", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 500 }))
+
+    const provider = makeAnakin()
+    const result = await provider.scrapeUrl("https://example.com")
+    expect(result.status).toBe("error")
+  })
+
+  it("returns status=error when submit throws", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("Network down")))
+
+    const provider = makeAnakin()
+    const result = await provider.scrapeUrl("https://example.com")
+    expect(result.status).toBe("error")
+  })
+
+  it("returns status=timeout when submit throws a TimeoutError", async () => {
+    const err = new Error("Timed out")
+    err.name = "TimeoutError"
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(err))
+
+    const provider = makeAnakin()
+    const result = await provider.scrapeUrl("https://example.com")
+    expect(result.status).toBe("timeout")
+  })
+})
+
+// ─── AnakinScrapeProvider — poll step ────────────────────────────────────────
+
+describe("AnakinScrapeProvider — poll step", () => {
+  it("GETs /v1/url-scraper/{jobId} to poll", async () => {
+    vi.stubGlobal("fetch", makeFetchSequence({ status: "completed", markdown: "# Content", url: "https://example.com" }))
+
+    const provider = makeAnakin()
+    await provider.scrapeUrl("https://example.com")
+
+    const [pollUrl] = (vi.mocked(fetch) as ReturnType<typeof vi.fn>).mock.calls[1] as [string]
+    expect(pollUrl).toContain("/v1/url-scraper/job_test_123")
+  })
+
+  it("sends X-API-Key header on poll", async () => {
+    vi.stubEnv("ANAKIN_API_KEY", "test-anakin-key")
+    vi.stubGlobal("fetch", makeFetchSequence({ status: "completed", markdown: "# Content", url: "https://example.com" }))
+
+    const provider = new AnakinScrapeProvider({ pollIntervalMs: 0, pollTimeoutMs: 5_000 })
+    await provider.scrapeUrl("https://example.com")
+
+    const [, pollOpts] = (vi.mocked(fetch) as ReturnType<typeof vi.fn>).mock.calls[1] as [string, RequestInit & { headers: Record<string, string> }]
+    expect(pollOpts.headers?.["X-API-Key"]).toBe("test-anakin-key")
+  })
+
+  it("returns status=ok when job completes", async () => {
+    vi.stubGlobal("fetch", makeFetchSequence({ status: "completed", markdown: "# Hello", url: "https://example.com" }))
+
+    const provider = makeAnakin()
+    const result = await provider.scrapeUrl("https://example.com")
+    expect(result.status).toBe("ok")
+  })
+
+  it("returns the markdown content from the completed job", async () => {
+    vi.stubGlobal("fetch", makeFetchSequence({ status: "completed", markdown: "# My Company\n\nContent here.", url: "https://example.com" }))
+
+    const provider = makeAnakin()
+    const result = await provider.scrapeUrl("https://example.com")
+    expect(result.markdown).toContain("My Company")
+  })
+
+  it("extracts title from '# ' heading line", async () => {
+    vi.stubGlobal("fetch", makeFetchSequence({ status: "completed", markdown: "# My Company\n\nContent.", url: "https://example.com" }))
+
+    const provider = makeAnakin()
+    const result = await provider.scrapeUrl("https://example.com")
+    expect(result.title).toBe("My Company")
+  })
+
+  it("does not set title when no '# ' heading", async () => {
+    vi.stubGlobal("fetch", makeFetchSequence({ status: "completed", markdown: "Plain content.", url: "https://example.com" }))
+
+    const provider = makeAnakin()
+    const result = await provider.scrapeUrl("https://example.com")
+    expect(result.title).toBeUndefined()
+  })
+
+  it("echoes the target url in the result", async () => {
+    vi.stubGlobal("fetch", makeFetchSequence({ status: "completed", markdown: "# OK", url: "https://myco.io/pricing" }))
+
+    const provider = makeAnakin()
+    const result = await provider.scrapeUrl("https://myco.io/pricing")
+    expect(result.url).toBe("https://myco.io/pricing")
+  })
+
+  it("result validates against RawExtractionSchema", async () => {
+    vi.stubGlobal("fetch", makeFetchSequence({ status: "completed", markdown: "# OK", url: "https://example.com" }))
+
+    const provider = makeAnakin()
+    const result = await provider.scrapeUrl("https://example.com")
+    expect(() => RawExtractionSchema.parse(result)).not.toThrow()
+  })
+
+  it("textPreview is truncated to 300 chars", async () => {
+    const longMarkdown = "# Title\n\n" + "A ".repeat(300)
+    vi.stubGlobal("fetch", makeFetchSequence({ status: "completed", markdown: longMarkdown, url: "https://example.com" }))
+
+    const provider = makeAnakin()
+    const result = await provider.scrapeUrl("https://example.com")
+    expect((result.textPreview ?? "").length).toBeLessThanOrEqual(320)
+  })
+
+  it("returns status=error when job fails", async () => {
+    vi.stubGlobal("fetch", makeFetchSequence({ status: "failed", error: "Blocked by target site" }))
+
+    const provider = makeAnakin()
+    const result = await provider.scrapeUrl("https://example.com")
+    expect(result.status).toBe("error")
+  })
+
+  it("continues polling through 'processing' status then succeeds", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn()
+        .mockResolvedValueOnce({ ok: true, json: async () => ({ jobId: "job_abc", status: "pending" }) })
+        .mockResolvedValueOnce({ ok: true, json: async () => ({ status: "processing" }) })
+        .mockResolvedValueOnce({ ok: true, json: async () => ({ status: "completed", markdown: "# Done" }) })
+    )
+
+    const provider = makeAnakin()
+    const result = await provider.scrapeUrl("https://example.com")
+    expect(result.status).toBe("ok")
+    expect(result.markdown).toContain("Done")
+    expect((vi.mocked(fetch) as ReturnType<typeof vi.fn>).mock.calls).toHaveLength(3)
+  })
+
+  it("returns status=timeout when poll deadline is exceeded", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn()
+        .mockResolvedValueOnce({ ok: true, json: async () => ({ jobId: "job_abc", status: "pending" }) })
+        .mockResolvedValue({ ok: true, json: async () => ({ status: "processing" }) })
+    )
+
+    // Very short timeout so it expires after one or two polls
+    const provider = new AnakinScrapeProvider({ pollIntervalMs: 0, pollTimeoutMs: 1 })
+    const result = await provider.scrapeUrl("https://example.com")
+    expect(result.status).toBe("timeout")
+  })
+
+  it("returns status=error when poll returns non-OK HTTP", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn()
+        .mockResolvedValueOnce({ ok: true, json: async () => ({ jobId: "job_abc", status: "pending" }) })
+        .mockResolvedValueOnce({ ok: false, status: 500 })
+    )
+
+    const provider = makeAnakin()
+    const result = await provider.scrapeUrl("https://example.com")
+    expect(result.status).toBe("error")
+  })
+})
+
+// ─── AnakinScrapeProvider.scrapeMany ─────────────────────────────────────────
+
+describe("AnakinScrapeProvider.scrapeMany", () => {
+  function makeCompletedFetch(markdown = "# Content") {
+    return vi.fn()
+      .mockResolvedValue({ ok: true, json: async () => ({ jobId: "job_x", status: "pending" }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ jobId: "job_x", status: "pending" }) })
+  }
+
+  it("returns one result per URL", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn()
+        // URL 1: submit + poll
+        .mockResolvedValueOnce({ ok: true, json: async () => ({ jobId: "j1", status: "pending" }) })
+        .mockResolvedValueOnce({ ok: true, json: async () => ({ status: "completed", markdown: "# A" }) })
+        // URL 2: submit + poll
+        .mockResolvedValueOnce({ ok: true, json: async () => ({ jobId: "j2", status: "pending" }) })
+        .mockResolvedValueOnce({ ok: true, json: async () => ({ status: "completed", markdown: "# B" }) })
+    )
+
+    const provider = makeAnakin()
+    const results = await provider.scrapeMany(["https://a.com", "https://b.com"])
+    expect(results).toHaveLength(2)
+  })
+
+  it("preserves URL order", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn()
+        .mockResolvedValueOnce({ ok: true, json: async () => ({ jobId: "j1", status: "pending" }) })
+        .mockResolvedValueOnce({ ok: true, json: async () => ({ status: "completed", markdown: "# Alpha" }) })
+        .mockResolvedValueOnce({ ok: true, json: async () => ({ jobId: "j2", status: "pending" }) })
+        .mockResolvedValueOnce({ ok: true, json: async () => ({ status: "completed", markdown: "# Beta" }) })
+    )
+
+    const provider = makeAnakin()
+    const results = await provider.scrapeMany(["https://alpha.com", "https://beta.com"])
+    expect(results[0].url).toBe("https://alpha.com")
+    expect(results[1].url).toBe("https://beta.com")
+  })
+
+  it("returns empty array for empty input", async () => {
+    const provider = makeAnakin()
+    const results = await provider.scrapeMany([])
+    expect(results).toHaveLength(0)
   })
 })

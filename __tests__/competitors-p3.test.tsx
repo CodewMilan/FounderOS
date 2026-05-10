@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import { CompetitorFeed } from "@/components/app/competitor-feed"
-import CompetitorsPage from "@/app/(app)/competitors/page"
+import CompetitorsPage from "@/app/app/competitors/page"
 import { seedCompetitorChanges } from "@/lib/seed"
 import type { CompetitorChange } from "@/lib/schemas"
 

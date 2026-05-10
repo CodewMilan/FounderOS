@@ -1,5 +1,5 @@
 /**
- * Smoke tests for the Funding Scout page (app/(app)/funding/page.tsx).
+ * Smoke tests for the Funding Scout page (app/app/funding/page.tsx).
  *
  * Verifies:
  *   - page container renders
@@ -10,7 +10,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent } from "@testing-library/react"
-import FundingPage from "@/app/(app)/funding/page"
+import FundingPage from "@/app/app/funding/page"
 import { seedFundingOpportunities, seedStartupProfile } from "@/lib/seed"
 
 // Mock Sheet (Radix portal) to avoid jsdom portal issues

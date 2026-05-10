@@ -9,34 +9,34 @@ interface FAQItem {
 
 const faqData: FAQItem[] = [
   {
-    question: "What is Brillance and who is it for?",
+    question: "What is FounderOS?",
     answer:
-      "Brillance is a comprehensive billing automation platform designed for businesses that need custom contract management. It's perfect for SaaS companies, service providers, and enterprises looking to streamline their billing processes.",
+      "FounderOS is a founder intelligence platform that turns public web pages into structured startup signals. It helps founders monitor competitors, research sales prospects, and discover relevant funding opportunities — all from one shared command center.",
   },
   {
-    question: "How does the custom contract billing work?",
+    question: "How does the competitor tracking work?",
     answer:
-      "Our platform automatically processes your custom contracts, calculates billing amounts based on your specific terms, and generates invoices. You can set up complex pricing structures, usage-based billing, and custom billing cycles.",
+      "You add any public URL — a pricing page, changelog, hiring page, or product announcement. FounderOS extracts and scores meaningful changes, then surfaces them in your competitor feed with a significance score and a suggested action for each change.",
   },
   {
-    question: "Can I integrate Brillance with my existing tools?",
+    question: "What does the Sales Prospect Agent produce?",
     answer:
-      "Yes! Brillance integrates seamlessly with popular CRM systems, accounting software, and payment processors. We support APIs and webhooks for custom integrations with your existing workflow.",
+      "For any company website you add, the Prospect Agent returns a structured brief: company category, likely stage, hiring and expansion signals, a fit score, and a recommended outreach angle. It turns an hour of research into a 30-second read.",
   },
   {
-    question: "What kind of support do you provide?",
+    question: "How does the VC Grant Scout work?",
     answer:
-      "We offer 24/7 customer support, dedicated account managers for enterprise clients, comprehensive documentation, and onboarding assistance to help you get started quickly.",
+      "You set up a startup profile — sector, stage, geography, and fundraising preference. FounderOS matches public accelerator and grant programs against your profile, ranks them by fit score, and highlights upcoming deadlines so you never miss an opportunity.",
   },
   {
-    question: "Is my data secure with Brillance?",
+    question: "Does it require API keys or external integrations?",
     answer:
-      "Absolutely. We use enterprise-grade security measures including end-to-end encryption, SOC 2 compliance, and regular security audits. Your data is stored in secure, redundant data centers.",
+      "No. FounderOS works entirely from public URLs. There are no OAuth flows, no CRM connections required, and no credentials to manage. Add a URL, get structured intelligence back.",
   },
   {
-    question: "How do I get started with Brillance?",
+    question: "How do I get started?",
     answer:
-      "Getting started is simple! Sign up for our free trial, connect your existing systems, and our onboarding team will help you set up your first custom billing workflow within 24 hours.",
+      "Click 'Open dashboard', then go to Settings to add a few public source URLs. Your first signals will appear immediately in demo mode — no credit card or external credentials required.",
   },
 ]
 
@@ -71,9 +71,9 @@ export default function FAQSection() {
             Frequently Asked Questions
           </div>
           <div className="w-full text-[#605A57] text-base font-normal leading-7 font-sans">
-            Explore your data, build your dashboard,
+            Everything you need to know about FounderOS
             <br className="hidden md:block" />
-            bring your team together.
+            and how it fits into your founder workflow.
           </div>
         </div>
 

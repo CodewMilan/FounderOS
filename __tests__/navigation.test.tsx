@@ -4,7 +4,7 @@ import { AppSidebar } from "@/components/app/app-sidebar"
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/dashboard",
+  usePathname: () => "/app",
 }))
 
 // Mock next/link
@@ -90,5 +90,55 @@ describe("AppSidebar navigation", () => {
     for (const section of sections) {
       expect(screen.getByText(section)).toBeDefined()
     }
+  })
+
+  it("Dashboard link points to /app", () => {
+    render(
+      <TestWrapper>
+        <AppSidebar />
+      </TestWrapper>
+    )
+    const dashboardLink = screen.getByRole("link", { name: /dashboard/i })
+    expect(dashboardLink.getAttribute("href")).toBe("/app")
+  })
+
+  it("Competitors link points to /app/competitors", () => {
+    render(
+      <TestWrapper>
+        <AppSidebar />
+      </TestWrapper>
+    )
+    const link = screen.getByRole("link", { name: /competitors/i })
+    expect(link.getAttribute("href")).toBe("/app/competitors")
+  })
+
+  it("Prospects link points to /app/prospects", () => {
+    render(
+      <TestWrapper>
+        <AppSidebar />
+      </TestWrapper>
+    )
+    const link = screen.getByRole("link", { name: /prospects/i })
+    expect(link.getAttribute("href")).toBe("/app/prospects")
+  })
+
+  it("Funding link points to /app/funding", () => {
+    render(
+      <TestWrapper>
+        <AppSidebar />
+      </TestWrapper>
+    )
+    const link = screen.getByRole("link", { name: /funding/i })
+    expect(link.getAttribute("href")).toBe("/app/funding")
+  })
+
+  it("Settings link points to /app/settings", () => {
+    render(
+      <TestWrapper>
+        <AppSidebar />
+      </TestWrapper>
+    )
+    const link = screen.getByRole("link", { name: /settings/i })
+    expect(link.getAttribute("href")).toBe("/app/settings")
   })
 })

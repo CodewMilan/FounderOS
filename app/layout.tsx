@@ -19,10 +19,10 @@ const instrumentSerif = Instrument_Serif({
 })
 
 export const metadata: Metadata = {
-  title: "Brillance - Effortless Custom Contract Billing",
+  title: "FounderOS — Founder Intelligence Platform",
   description:
-    "Streamline your billing process with seamless automation for every custom contract, tailored by Brillance.",
-    generator: 'v0.app'
+    "Monitor competitors, research prospects, and discover funding opportunities from one founder intelligence command center.",
+  generator: "v0.app",
 }
 
 export default function RootLayout({

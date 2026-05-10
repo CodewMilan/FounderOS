@@ -21,18 +21,18 @@ export default function DocumentationSection() {
 
   const cards = [
     {
-      title: "Plan your schedules",
-      description: "Explore your data, build your dashboard,\nbring your team together.",
+      title: "Competitor Change Radar",
+      description: "Track pricing, hiring, and product changes from competitor pages.\nEach change is scored, classified, and paired with a suggested action.",
       image: "/modern-dashboard-interface-with-data-visualization.jpg",
     },
     {
-      title: "Data to insights in minutes",
-      description: "Transform raw data into actionable insights\nwith powerful analytics tools.",
+      title: "Sales Prospect Agent",
+      description: "Analyze any company website and get a structured brief.\nFit score, maturity signals, hiring signals, and outreach angle — in seconds.",
       image: "/analytics-dashboard.png",
     },
     {
-      title: "Collaborate seamlessly",
-      description: "Work together in real-time with your team\nand share insights instantly.",
+      title: "VC Grant Scout",
+      description: "Discover grants, programs, and accelerators ranked by fit.\nDeadline-aware, geography-aware, and matched to your startup profile.",
       image: "/team-collaboration-interface-with-shared-workspace.jpg",
     },
   ]
@@ -63,12 +63,12 @@ export default function DocumentationSection() {
             text="Platform Features"
           />
           <div className="self-stretch text-center flex justify-center flex-col text-[#49423D] text-3xl md:text-5xl font-semibold leading-tight md:leading-[60px] font-sans tracking-tight">
-            Streamline your business operations
+            Three workflows. One command center.
           </div>
           <div className="self-stretch text-center text-[#605A57] text-base font-normal leading-7 font-sans">
-            Manage schedules, analyze data, and collaborate with your team
+            Monitor competitors, qualify prospects, and discover funding
             <br />
-            all in one powerful platform.
+            from one shared founder intelligence platform.
           </div>
         </div>
       </div>

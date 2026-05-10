@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import { DashboardClient } from "@/components/app/dashboard-client"
-import DashboardPage from "@/app/(app)/dashboard/page"
+import DashboardPage from "@/app/app/page"
 import { briefService } from "@/lib/services/briefService"
 import { store } from "@/lib/store"
 import { seedCompetitorChanges, seedProspects, seedFundingOpportunities } from "@/lib/seed"

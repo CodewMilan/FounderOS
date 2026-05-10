@@ -45,23 +45,38 @@ cp .env.example .env.local
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `SCRAPE_PROVIDER` | No | `mock` | Set to `real` to enable live scraping via Jina Reader instead of the built-in mock provider |
-| `JINA_API_KEY` | No | — | Optional API key for [Jina AI Reader](https://jina.ai/reader/) — increases rate limits when using the real provider |
+| `SCRAPE_PROVIDER` | No | `mock` | Controls which scrape provider to use: `mock`, `anakin`, `real`, or `jina` |
+| `ANAKIN_API_KEY` | When using Anakin | — | API key for [Anakin URL Scraper](https://anakin.io) — required when `SCRAPE_PROVIDER=anakin` |
+| `ANAKIN_BASE_URL` | No | `https://api.anakin.io` | Override the Anakin API base URL |
+| `JINA_API_KEY` | No | — | Optional API key for [Jina AI Reader](https://jina.ai/reader/) — increases rate limits when `SCRAPE_PROVIDER=real` |
 
 ### Demo mode (default)
 
 When `SCRAPE_PROVIDER` is unset or set to `mock`, the app uses the built-in mock provider. All scrape operations return realistic fixture data instantly. No network calls are made. This is the correct mode for demos and development.
 
-### Real provider mode
+### Anakin provider (recommended for live use)
 
-Set `SCRAPE_PROVIDER=real` to route all scrape operations through [Jina AI Reader](https://r.jina.ai/), which returns clean markdown for any public webpage. Basic usage is free with no API key. Set `JINA_API_KEY` to raise rate limits.
+[Anakin](https://anakin.io) is a production-grade scraping API with anti-detection, proxy routing across 207 countries, intelligent caching, and optional AI JSON extraction.
+
+Set `SCRAPE_PROVIDER=anakin` and provide your API key:
+
+```
+SCRAPE_PROVIDER=anakin
+ANAKIN_API_KEY=ask_your_key_here
+```
+
+The Anakin provider uses an async job pattern: it submits a scrape job and polls every 3 seconds until the job completes (up to 90 seconds timeout). Returns clean markdown content.
+
+### Jina provider (lightweight alternative)
+
+Set `SCRAPE_PROVIDER=real` or `SCRAPE_PROVIDER=jina` to route scrape operations through [Jina AI Reader](https://r.jina.ai/). Basic usage is free with no API key.
 
 ```
 SCRAPE_PROVIDER=real
-JINA_API_KEY=your_key_here   # optional
+JINA_API_KEY=your_key_here   # optional, raises rate limits
 ```
 
-The app automatically falls back to mock mode if `SCRAPE_PROVIDER` is unset, empty, or set to any value other than `real`.
+The app automatically falls back to mock mode if `SCRAPE_PROVIDER` is unset, empty, or set to an unrecognised value.
 
 ## Commands
 

@@ -22,25 +22,25 @@ export default function TestimonialsSection() {
   const testimonials = [
     {
       quote:
-        "In just a few minutes, we transformed our data into actionable insights. The process was seamless and incredibly efficient!",
-      name: "Jamie Marshall",
-      company: "Co-founder, Exponent",
+        "FounderOS showed us our top competitor had quietly raised prices on their enterprise tier. We adjusted our pitch deck before the next sales call and it landed.",
+      name: "Alex Patel",
+      company: "Founder, Stackery",
       image:
         "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/ChatGPT%20Image%20Sep%2011%2C%202025%2C%2011_35_19%20AM-z4zSRLsbOQDp7MJS1t8EXmGNB6Al9Z.png",
     },
     {
       quote:
-        "Brillance has revolutionized how we handle custom contracts. The automation saves us hours every week and eliminates errors completely.",
-      name: "Sarah Chen",
-      company: "VP Operations, TechFlow",
+        "I added five prospect URLs on Monday morning and had fit scores and outreach angles for all of them by lunch. It replaced two hours of manual research per prospect.",
+      name: "Priya Nair",
+      company: "Co-founder, FlowBase",
       image:
         "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/ChatGPT%20Image%20Sep%2011%2C%202025%2C%2010_54_18%20AM-nbiecp92QNdTudmCrHr97uekrIPzCP.png",
     },
     {
       quote:
-        "The billing automation is a game-changer. What used to take our team days now happens automatically with perfect accuracy.",
-      name: "Marcus Rodriguez",
-      company: "Finance Director, InnovateCorp",
+        "The grant scout surfaced two programs I'd never heard of, both with deadlines within 60 days. Applied to both. This is exactly the kind of thing I was missing.",
+      name: "Jordan Wu",
+      company: "Indie hacker, Noteboard",
       image:
         "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/ChatGPT%20Image%20Sep%2011%2C%202025%2C%2011_01_05%20AM-TBOe92trRxKn4G5So1m9D2h7LRH4PG.png",
     },

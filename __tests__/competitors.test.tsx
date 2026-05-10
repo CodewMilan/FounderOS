@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest"
 import { render, screen, fireEvent } from "@testing-library/react"
-import CompetitorsPage from "@/app/(app)/competitors/page"
+import CompetitorsPage from "@/app/app/competitors/page"
 import { seedCompetitorChanges } from "@/lib/seed"
 
 // Mock next/link

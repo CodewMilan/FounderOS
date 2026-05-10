@@ -26,22 +26,22 @@ import {
 
 const navItems = [
   {
-    href: "/dashboard",
+    href: "/app",
     label: "Dashboard",
     icon: LayoutDashboard,
   },
   {
-    href: "/competitors",
+    href: "/app/competitors",
     label: "Competitors",
     icon: Radar,
   },
   {
-    href: "/prospects",
+    href: "/app/prospects",
     label: "Prospects",
     icon: Users,
   },
   {
-    href: "/funding",
+    href: "/app/funding",
     label: "Funding",
     icon: Banknote,
   },
@@ -49,7 +49,7 @@ const navItems = [
 
 const secondaryItems = [
   {
-    href: "/settings",
+    href: "/app/settings",
     label: "Settings",
     icon: Settings,
   },
@@ -64,7 +64,7 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href="/dashboard">
+              <Link href="/app">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-[#37322F] text-white">
                   <Zap className="size-4" />
                 </div>
@@ -91,7 +91,11 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
+                    isActive={
+                      item.href === "/app"
+                        ? pathname === "/app"
+                        : pathname === item.href || pathname.startsWith(item.href + "/")
+                    }
                     tooltip={item.label}
                   >
                     <Link href={item.href}>
