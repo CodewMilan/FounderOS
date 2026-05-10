@@ -155,3 +155,48 @@ export const UpdatePricingResultSchema = z.object({
   reason: z.string(),
 })
 export type UpdatePricingResult = z.infer<typeof UpdatePricingResultSchema>
+
+// ─── Workflow 7: Unified Run (orchestration) ──────────────────────────────────
+
+export const UrlTypeSchema = z.enum(["competitor", "prospect", "funding", "unknown"])
+export type UrlType = z.infer<typeof UrlTypeSchema>
+
+export const UnifiedRunRequestSchema = z.object({
+  url: z.string().url("url must be a valid URL"),
+  userSiteUrl: z.string().url("userSiteUrl must be a valid URL").optional(),
+})
+export type UnifiedRunRequest = z.infer<typeof UnifiedRunRequestSchema>
+
+export const UnifiedDeliverySchema = z.object({
+  telegram: z.object({
+    sent: z.boolean(),
+    timestamp: z.string().optional(),
+    error: z.string().optional(),
+  }),
+  slack: z.object({
+    sent: z.boolean(),
+    channel: z.string().optional(),
+    timestamp: z.string().optional(),
+    error: z.string().optional(),
+  }),
+})
+
+export const UnifiedRunResultSchema = z.object({
+  detectedType: UrlTypeSchema,
+  workflows: z.array(z.string()),
+  briefs: z.array(z.unknown()),
+  deliveries: UnifiedDeliverySchema,
+  devTicketAvailable: z.boolean(),
+  devTicketData: z
+    .object({
+      featureName: z.string(),
+      competitorName: z.string(),
+      description: z.string(),
+      whyNow: z.string(),
+      suggestedImplementation: z.string(),
+      confidence: z.enum(["high", "medium", "low"]),
+      sourceUrl: z.string(),
+    })
+    .optional(),
+})
+export type UnifiedRunResult = z.infer<typeof UnifiedRunResultSchema>

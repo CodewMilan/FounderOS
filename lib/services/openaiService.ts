@@ -248,6 +248,63 @@ export async function extractProspectSignals(
   return result as ProspectBrief
 }
 
+// ─── classifyPageType ─────────────────────────────────────────────────────────
+
+export type PageType = "competitor" | "prospect" | "funding" | "unknown"
+
+function mockClassifyPageType(markdown: string, url: string): PageType {
+  const text = (markdown + " " + url).toLowerCase()
+  if (
+    text.includes("grant") ||
+    text.includes("accelerator") ||
+    text.includes("fund") ||
+    text.includes("vc.com") ||
+    text.includes("investor") ||
+    text.includes("fellowship")
+  ) {
+    return "funding"
+  }
+  if (
+    text.includes("pricing") ||
+    text.includes("features") ||
+    text.includes("vs ") ||
+    text.includes("plans") ||
+    text.includes("changelog")
+  ) {
+    return "competitor"
+  }
+  return "prospect"
+}
+
+const CLASSIFY_SYSTEM_PROMPT = `You are a URL classifier for a founder intelligence tool.
+Given a page's content, classify it into exactly one of these types:
+- "competitor": a product/SaaS company website, pricing page, or feature page
+- "prospect": a B2B company website that could be a sales target
+- "funding": a grant, VC fund, accelerator, fellowship, or startup funding program
+- "unknown": none of the above
+
+Return ONLY valid JSON with this exact shape: { "type": "competitor" | "prospect" | "funding" | "unknown" }`
+
+export async function classifyPageType(markdown: string, url: string): Promise<PageType> {
+  if (!process.env.OPENAI_API_KEY) {
+    return mockClassifyPageType(markdown, url)
+  }
+
+  try {
+    const userMessage = `URL: ${url}\n\nPage content (first 4000 chars):\n${markdown.slice(0, 4000)}`
+    const result = await callOpenAI(CLASSIFY_SYSTEM_PROMPT, userMessage)
+    const typed = result as { type?: string }
+    const allowed: PageType[] = ["competitor", "prospect", "funding", "unknown"]
+    if (typeof typed.type === "string" && allowed.includes(typed.type as PageType)) {
+      return typed.type as PageType
+    }
+    return "unknown"
+  } catch {
+    console.warn("[openaiService] classifyPageType failed — falling back to heuristic")
+    return mockClassifyPageType(markdown, url)
+  }
+}
+
 // ─── extractFundingInfo ───────────────────────────────────────────────────────
 
 const FUNDING_SYSTEM_PROMPT = `You are a startup funding analyst.

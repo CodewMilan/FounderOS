@@ -1,5 +1,5 @@
 /**
- * UI tests for the WorkflowPanel component.
+ * UI tests for the redesigned WorkflowPanel — single URL input, single button.
  * All API calls are mocked via global fetch stub.
  */
 
@@ -14,6 +14,90 @@ vi.mock("next/link", () => ({
   ),
 }))
 
+// ─── Mock data helpers ────────────────────────────────────────────────────────
+
+const mockCompetitorResult = {
+  detectedType: "competitor",
+  workflows: ["feature_gap", "pricing_response"],
+  briefs: [
+    {
+      competitorName: "Rival Inc",
+      featureName: "AI Chat",
+      whatItDoes: "Instant answers",
+      gap: "You lack this",
+      whyItMatters: "Big deal",
+      suggestedAction: "Build it",
+      confidence: "high",
+      sourceUrl: "https://rival.com",
+    },
+    {
+      competitorName: "Rival Inc",
+      changeDetected: "Price drop",
+      theirPricing: "$29/mo",
+      yourPositioning: "review",
+      suggestedResponse: "Highlight value",
+      urgency: "medium",
+      sourceUrl: "https://rival.com",
+    },
+  ],
+  deliveries: {
+    telegram: { sent: true, timestamp: "2026-05-10T08:00:00.000Z" },
+    slack: { sent: true, channel: "#founder-os-alerts", timestamp: "2026-05-10T08:00:00.000Z" },
+  },
+  devTicketAvailable: true,
+  devTicketData: {
+    featureName: "AI Chat",
+    competitorName: "Rival Inc",
+    description: "You lack this",
+    whyNow: "Big deal",
+    suggestedImplementation: "Build it",
+    confidence: "high",
+    sourceUrl: "https://rival.com",
+  },
+}
+
+const mockProspectResult = {
+  detectedType: "prospect",
+  workflows: ["prospect_enrichment"],
+  briefs: [
+    {
+      companyName: "TechFlow Inc",
+      description: "Workflow automation tools",
+      icpFit: "high",
+      keySignals: ["Hiring engineers", "EU expansion", "AI integration"],
+      outreachAngle: "Lead with AI pipeline",
+      confidence: "high",
+      sourceUrl: "https://techflow.com",
+    },
+  ],
+  deliveries: {
+    telegram: { sent: true, timestamp: "2026-05-10T08:00:00.000Z" },
+    slack: { sent: false },
+  },
+  devTicketAvailable: false,
+}
+
+const mockFundingResult = {
+  detectedType: "funding",
+  workflows: ["funding_alert"],
+  briefs: [
+    {
+      programName: "Startup India Seed Fund",
+      provider: "DPIIT",
+      deadline: "2026-05-20",
+      isUrgent: true,
+      eligibility: "DPIIT registered, <2 years",
+      fitReason: "AI/data tools match",
+      applyUrl: "https://grants.gov",
+    },
+  ],
+  deliveries: {
+    telegram: { sent: true, timestamp: "2026-05-10T08:00:00.000Z" },
+    slack: { sent: false },
+  },
+  devTicketAvailable: false,
+}
+
 // ─── Render ───────────────────────────────────────────────────────────────────
 
 describe("WorkflowPanel — render", () => {
@@ -22,112 +106,325 @@ describe("WorkflowPanel — render", () => {
     expect(screen.getByTestId("workflow-panel")).toBeDefined()
   })
 
-  it("renders all 6 workflow tab triggers", () => {
+  it("renders a single main URL input", () => {
     render(<WorkflowPanel />)
-    expect(screen.getByText("Feature Gap")).toBeDefined()
-    expect(screen.getByText("Dev Ticket")).toBeDefined()
-    expect(screen.getByText("Pricing Response")).toBeDefined()
-    expect(screen.getByText("Prospect Brief")).toBeDefined()
-    expect(screen.getByText("Funding Alert")).toBeDefined()
-    expect(screen.getByText("Pricing Update")).toBeDefined()
+    expect(screen.getByTestId("main-url-input")).toBeDefined()
   })
 
-  it("shows Feature Gap tab content by default", () => {
+  it("renders the single Analyze & Run button", () => {
     render(<WorkflowPanel />)
-    expect(screen.getByTestId("feature-gap-tab")).toBeDefined()
+    expect(screen.getByTestId("run-button")).toBeDefined()
+    expect(screen.getByTestId("run-button").textContent).toContain("Analyze & Run")
   })
-})
 
-// ─── Feature Gap Tab ─────────────────────────────────────────────────────────
-
-describe("WorkflowPanel — Feature Gap tab", () => {
-  afterEach(() => { vi.unstubAllGlobals() })
-
-  it("renders competitor URL input", () => {
+  it("does NOT render any workflow type tabs", () => {
     render(<WorkflowPanel />)
-    expect(screen.getByTestId("feature-gap-competitor-url")).toBeDefined()
+    expect(screen.queryByText("Feature Gap")).toBeNull()
+    expect(screen.queryByText("Dev Ticket")).toBeNull()
+    expect(screen.queryByText("Pricing Response")).toBeNull()
+    expect(screen.queryByText("Prospect Brief")).toBeNull()
+    expect(screen.queryByText("Funding Alert")).toBeNull()
+  })
+
+  it("does NOT render Pricing Update tab", () => {
+    render(<WorkflowPanel />)
+    expect(screen.queryByText("Pricing Update")).toBeNull()
+    expect(screen.queryByText(/lemon squeezy/i)).toBeNull()
   })
 
   it("run button is disabled when URL is empty", () => {
     render(<WorkflowPanel />)
-    const btn = screen.getByTestId("feature-gap-run-btn") as HTMLButtonElement
+    const btn = screen.getByTestId("run-button") as HTMLButtonElement
     expect(btn.disabled).toBe(true)
   })
 
   it("run button is enabled when URL is filled", () => {
     render(<WorkflowPanel />)
-    fireEvent.change(screen.getByTestId("feature-gap-competitor-url"), {
+    fireEvent.change(screen.getByTestId("main-url-input"), {
       target: { value: "https://rival.com" },
     })
-    const btn = screen.getByTestId("feature-gap-run-btn") as HTMLButtonElement
+    const btn = screen.getByTestId("run-button") as HTMLButtonElement
     expect(btn.disabled).toBe(false)
   })
 
-  it("calls the correct API route", async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        brief: {
-          competitorName: "Rival", featureName: "AI Chat", whatItDoes: "Chat.",
-          gap: "Missing.", whyItMatters: "Big.", suggestedAction: "Build.", confidence: "high",
-          sourceUrl: "https://rival.com",
-        },
-        telegramSent: false,
-        slackSent: false,
-      }),
-    })
-    vi.stubGlobal("fetch", mockFetch)
-
+  it("optional user site URL field is hidden by default", () => {
     render(<WorkflowPanel />)
-    fireEvent.change(screen.getByTestId("feature-gap-competitor-url"), {
-      target: { value: "https://rival.com" },
-    })
-    fireEvent.click(screen.getByTestId("feature-gap-run-btn"))
-
-    await waitFor(() => { expect(mockFetch).toHaveBeenCalledOnce() })
-
-    const [url] = mockFetch.mock.calls[0] as [string]
-    expect(url).toContain("/api/workflows/feature-gap")
+    expect(screen.queryByTestId("user-site-url-input")).toBeNull()
   })
 
-  it("shows brief preview after successful run", async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        brief: {
-          competitorName: "Rival", featureName: "AI Chat", whatItDoes: "Chat.",
-          gap: "Missing.", whyItMatters: "Big.", suggestedAction: "Build.", confidence: "high",
-          sourceUrl: "https://rival.com",
-        },
-        telegramSent: false,
-        slackSent: false,
-      }),
-    })
-    vi.stubGlobal("fetch", mockFetch)
+  it("optional user site URL appears after toggle", () => {
+    render(<WorkflowPanel />)
+    fireEvent.click(screen.getByTestId("toggle-user-site"))
+    expect(screen.getByTestId("user-site-url-input")).toBeDefined()
+  })
+})
+
+// ─── Status steps ─────────────────────────────────────────────────────────────
+
+describe("WorkflowPanel — status steps", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.useRealTimers()
+  })
+
+  it("shows status steps after clicking run", async () => {
+    let resolveFetch!: (v: Response) => void
+    const pendingFetch = new Promise<Response>((res) => { resolveFetch = res })
+    vi.stubGlobal("fetch", vi.fn().mockReturnValue(pendingFetch))
 
     render(<WorkflowPanel />)
-    fireEvent.change(screen.getByTestId("feature-gap-competitor-url"), {
+    fireEvent.change(screen.getByTestId("main-url-input"), {
       target: { value: "https://rival.com" },
     })
-    fireEvent.click(screen.getByTestId("feature-gap-run-btn"))
+    fireEvent.click(screen.getByTestId("run-button"))
 
     await waitFor(() => {
-      expect(screen.getByTestId("brief-preview")).toBeDefined()
+      expect(screen.getByTestId("status-steps")).toBeDefined()
     })
+
+    // Resolve so the component doesn't hang
+    resolveFetch(new Response(JSON.stringify(mockCompetitorResult), { status: 200 }))
   })
 
-  it("shows error message on API failure", async () => {
+  it("step 0 is active initially during run", async () => {
+    let resolveFetch!: (v: Response) => void
+    const pendingFetch = new Promise<Response>((res) => { resolveFetch = res })
+    vi.stubGlobal("fetch", vi.fn().mockReturnValue(pendingFetch))
+
+    render(<WorkflowPanel />)
+    fireEvent.change(screen.getByTestId("main-url-input"), {
+      target: { value: "https://rival.com" },
+    })
+    fireEvent.click(screen.getByTestId("run-button"))
+
+    await waitFor(() => expect(screen.getByTestId("step-0")).toBeDefined())
+    const step0 = screen.getByTestId("step-0")
+    expect(step0.textContent).toContain("Scraping URL")
+
+    resolveFetch(new Response(JSON.stringify(mockCompetitorResult), { status: 200 }))
+  })
+})
+
+// ─── Competitor URL flow ──────────────────────────────────────────────────────
+
+describe("WorkflowPanel — competitor URL flow", () => {
+  afterEach(() => { vi.unstubAllGlobals() })
+
+  it("calls /api/workflows/run with the provided URL", async () => {
     const mockFetch = vi.fn().mockResolvedValue({
-      ok: false,
-      json: async () => ({ error: "Scraping failed" }),
+      ok: true,
+      json: async () => mockCompetitorResult,
     })
     vi.stubGlobal("fetch", mockFetch)
 
     render(<WorkflowPanel />)
-    fireEvent.change(screen.getByTestId("feature-gap-competitor-url"), {
+    fireEvent.change(screen.getByTestId("main-url-input"), {
       target: { value: "https://rival.com" },
     })
-    fireEvent.click(screen.getByTestId("feature-gap-run-btn"))
+    fireEvent.click(screen.getByTestId("run-button"))
+
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledOnce())
+    const [url, opts] = mockFetch.mock.calls[0] as [string, RequestInit]
+    expect(url).toContain("/api/workflows/run")
+    const body = JSON.parse(opts.body as string) as { url: string }
+    expect(body.url).toBe("https://rival.com")
+  })
+
+  it("includes userSiteUrl in the request when provided", async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => mockCompetitorResult,
+    })
+    vi.stubGlobal("fetch", mockFetch)
+
+    render(<WorkflowPanel />)
+    fireEvent.change(screen.getByTestId("main-url-input"), {
+      target: { value: "https://rival.com" },
+    })
+    fireEvent.click(screen.getByTestId("toggle-user-site"))
+    fireEvent.change(screen.getByTestId("user-site-url-input"), {
+      target: { value: "https://mysite.com" },
+    })
+    fireEvent.click(screen.getByTestId("run-button"))
+
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledOnce())
+    const [, opts] = mockFetch.mock.calls[0] as [string, RequestInit]
+    const body = JSON.parse(opts.body as string) as { url: string; userSiteUrl: string }
+    expect(body.userSiteUrl).toBe("https://mysite.com")
+  })
+
+  it("renders result card after successful competitor run", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => mockCompetitorResult,
+    }))
+
+    render(<WorkflowPanel />)
+    fireEvent.change(screen.getByTestId("main-url-input"), {
+      target: { value: "https://rival.com" },
+    })
+    fireEvent.click(screen.getByTestId("run-button"))
+
+    await waitFor(() => expect(screen.getByTestId("result-card")).toBeDefined())
+  })
+
+  it("shows detected type badge as Competitor", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => mockCompetitorResult,
+    }))
+
+    render(<WorkflowPanel />)
+    fireEvent.change(screen.getByTestId("main-url-input"), {
+      target: { value: "https://rival.com" },
+    })
+    fireEvent.click(screen.getByTestId("run-button"))
+
+    await waitFor(() => {
+      const badge = screen.getByTestId("detected-type-badge")
+      expect(badge.textContent).toContain("Competitor")
+    })
+  })
+
+  it("shows dev ticket button for competitor result", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => mockCompetitorResult,
+    }))
+
+    render(<WorkflowPanel />)
+    fireEvent.change(screen.getByTestId("main-url-input"), {
+      target: { value: "https://rival.com" },
+    })
+    fireEvent.click(screen.getByTestId("run-button"))
+
+    await waitFor(() => {
+      expect(screen.getByTestId("create-dev-ticket-btn")).toBeDefined()
+    })
+  })
+
+  it("dev ticket button calls /api/workflows/dev-ticket", async () => {
+    let callCount = 0
+    const mockFetch = vi.fn().mockImplementation(async (url: string) => {
+      callCount++
+      if (callCount === 1) {
+        return { ok: true, json: async () => mockCompetitorResult }
+      }
+      return { ok: true, json: async () => ({ slackSent: true }) }
+    })
+    vi.stubGlobal("fetch", mockFetch)
+
+    render(<WorkflowPanel />)
+    fireEvent.change(screen.getByTestId("main-url-input"), {
+      target: { value: "https://rival.com" },
+    })
+    fireEvent.click(screen.getByTestId("run-button"))
+
+    await waitFor(() => screen.getByTestId("create-dev-ticket-btn"))
+    fireEvent.click(screen.getByTestId("create-dev-ticket-btn"))
+
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(2))
+    const secondCall = mockFetch.mock.calls[1] as [string, RequestInit]
+    expect(secondCall[0]).toContain("/api/workflows/dev-ticket")
+  })
+})
+
+// ─── Prospect URL flow ────────────────────────────────────────────────────────
+
+describe("WorkflowPanel — prospect URL flow", () => {
+  afterEach(() => { vi.unstubAllGlobals() })
+
+  it("renders result card with prospect type after prospect run", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => mockProspectResult,
+    }))
+
+    render(<WorkflowPanel />)
+    fireEvent.change(screen.getByTestId("main-url-input"), {
+      target: { value: "https://techflow.com" },
+    })
+    fireEvent.click(screen.getByTestId("run-button"))
+
+    await waitFor(() => {
+      const badge = screen.getByTestId("detected-type-badge")
+      expect(badge.textContent).toContain("Sales Prospect")
+    })
+  })
+
+  it("does NOT show dev ticket button for prospect result", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => mockProspectResult,
+    }))
+
+    render(<WorkflowPanel />)
+    fireEvent.change(screen.getByTestId("main-url-input"), {
+      target: { value: "https://techflow.com" },
+    })
+    fireEvent.click(screen.getByTestId("run-button"))
+
+    await waitFor(() => screen.getByTestId("result-card"))
+    expect(screen.queryByTestId("create-dev-ticket-btn")).toBeNull()
+  })
+})
+
+// ─── Funding URL flow ─────────────────────────────────────────────────────────
+
+describe("WorkflowPanel — funding URL flow", () => {
+  afterEach(() => { vi.unstubAllGlobals() })
+
+  it("renders result card with funding type after funding run", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => mockFundingResult,
+    }))
+
+    render(<WorkflowPanel />)
+    fireEvent.change(screen.getByTestId("main-url-input"), {
+      target: { value: "https://grants.gov/startup" },
+    })
+    fireEvent.click(screen.getByTestId("run-button"))
+
+    await waitFor(() => {
+      const badge = screen.getByTestId("detected-type-badge")
+      expect(badge.textContent).toContain("Funding")
+    })
+  })
+
+  it("does NOT show dev ticket button for funding result", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => mockFundingResult,
+    }))
+
+    render(<WorkflowPanel />)
+    fireEvent.change(screen.getByTestId("main-url-input"), {
+      target: { value: "https://grants.gov/startup" },
+    })
+    fireEvent.click(screen.getByTestId("run-button"))
+
+    await waitFor(() => screen.getByTestId("result-card"))
+    expect(screen.queryByTestId("create-dev-ticket-btn")).toBeNull()
+  })
+})
+
+// ─── Error handling ───────────────────────────────────────────────────────────
+
+describe("WorkflowPanel — error handling", () => {
+  afterEach(() => { vi.unstubAllGlobals() })
+
+  it("shows error message on API failure", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: false,
+      json: async () => ({ error: "Scraping failed" }),
+    }))
+
+    render(<WorkflowPanel />)
+    fireEvent.change(screen.getByTestId("main-url-input"), {
+      target: { value: "https://rival.com" },
+    })
+    fireEvent.click(screen.getByTestId("run-button"))
 
     await waitFor(() => {
       expect(screen.getByText("Scraping failed")).toBeDefined()
@@ -138,10 +435,10 @@ describe("WorkflowPanel — Feature Gap tab", () => {
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("Network error")))
 
     render(<WorkflowPanel />)
-    fireEvent.change(screen.getByTestId("feature-gap-competitor-url"), {
+    fireEvent.change(screen.getByTestId("main-url-input"), {
       target: { value: "https://rival.com" },
     })
-    fireEvent.click(screen.getByTestId("feature-gap-run-btn"))
+    fireEvent.click(screen.getByTestId("run-button"))
 
     await waitFor(() => {
       expect(screen.getByText(/network error/i)).toBeDefined()
@@ -149,287 +446,59 @@ describe("WorkflowPanel — Feature Gap tab", () => {
   })
 })
 
-// ─── Dev Ticket Tab ───────────────────────────────────────────────────────────
+// ─── Delivery badges ──────────────────────────────────────────────────────────
 
-describe("WorkflowPanel — Dev Ticket tab", () => {
+describe("WorkflowPanel — delivery badges", () => {
   afterEach(() => { vi.unstubAllGlobals() })
 
-  it("renders dev ticket tab content when selected", async () => {
-    render(<WorkflowPanel />)
-    fireEvent.click(screen.getByText("Dev Ticket"))
-    await waitFor(() => expect(screen.getByTestId("dev-ticket-tab")).toBeDefined())
-  })
-
-  it("shows dev ticket inputs", async () => {
-    render(<WorkflowPanel />)
-    fireEvent.click(screen.getByText("Dev Ticket"))
-    await waitFor(() => expect(screen.getByTestId("dev-ticket-feature-name")).toBeDefined())
-    expect(screen.getByTestId("dev-ticket-competitor-name")).toBeDefined()
-    expect(screen.getByTestId("dev-ticket-source-url")).toBeDefined()
-  })
-
-  it("run button is disabled when required fields are empty", async () => {
-    render(<WorkflowPanel />)
-    fireEvent.click(screen.getByText("Dev Ticket"))
-    await waitFor(() => expect(screen.getByTestId("dev-ticket-run-btn")).toBeDefined())
-    const btn = screen.getByTestId("dev-ticket-run-btn") as HTMLButtonElement
-    expect(btn.disabled).toBe(true)
-  })
-
-  it("calls dev-ticket API route", async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
+  it("shows Telegram sent badge when telegram.sent is true", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => ({ slackSent: false }),
-    })
-    vi.stubGlobal("fetch", mockFetch)
+      json: async () => mockCompetitorResult,
+    }))
 
     render(<WorkflowPanel />)
-    fireEvent.click(screen.getByText("Dev Ticket"))
-    await waitFor(() => expect(screen.getByTestId("dev-ticket-feature-name")).toBeDefined())
-
-    fireEvent.change(screen.getByTestId("dev-ticket-feature-name"), {
-      target: { value: "AI Chat" },
-    })
-    fireEvent.change(screen.getByTestId("dev-ticket-competitor-name"), {
-      target: { value: "Rival Corp" },
-    })
-    fireEvent.change(screen.getByTestId("dev-ticket-source-url"), {
+    fireEvent.change(screen.getByTestId("main-url-input"), {
       target: { value: "https://rival.com" },
     })
-    fireEvent.click(screen.getByTestId("dev-ticket-run-btn"))
+    fireEvent.click(screen.getByTestId("run-button"))
 
-    await waitFor(() => { expect(mockFetch).toHaveBeenCalledOnce() })
-    const [url] = mockFetch.mock.calls[0] as [string]
-    expect(url).toContain("/api/workflows/dev-ticket")
+    await waitFor(() => screen.getByTestId("result-card"))
+    const telegramBadges = screen.getAllByText(/telegram/i)
+    expect(telegramBadges.length).toBeGreaterThan(0)
+  })
+
+  it("shows Slack channel badge when slack.sent is true", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => mockCompetitorResult,
+    }))
+
+    render(<WorkflowPanel />)
+    fireEvent.change(screen.getByTestId("main-url-input"), {
+      target: { value: "https://rival.com" },
+    })
+    fireEvent.click(screen.getByTestId("run-button"))
+
+    await waitFor(() => screen.getByTestId("result-card"))
+    const slackBadges = screen.getAllByText(/founder-os-alerts/i)
+    expect(slackBadges.length).toBeGreaterThan(0)
   })
 })
 
-// ─── Pricing Response Tab ─────────────────────────────────────────────────────
+// ─── Pricing Update is gone ───────────────────────────────────────────────────
 
-describe("WorkflowPanel — Pricing Response tab", () => {
-  afterEach(() => { vi.unstubAllGlobals() })
-
-  it("renders pricing response inputs", async () => {
+describe("WorkflowPanel — Pricing Update removal", () => {
+  it("never renders any Lemon Squeezy reference", () => {
     render(<WorkflowPanel />)
-    fireEvent.click(screen.getByText("Pricing Response"))
-    await waitFor(() => expect(screen.getByTestId("pricing-response-competitor-url")).toBeDefined())
-    expect(screen.getByTestId("pricing-response-user-url")).toBeDefined()
+    expect(screen.queryByText(/lemon squeezy/i)).toBeNull()
+    expect(screen.queryByTestId("pricing-update-price")).toBeNull()
+    expect(screen.queryByTestId("pricing-update-reason")).toBeNull()
+    expect(screen.queryByTestId("pricing-update-confirm-btn")).toBeNull()
   })
 
-  it("calls pricing-response API route", async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        brief: {
-          competitorName: "Rival", changeDetected: "Price drop", theirPricing: "$29",
-          yourPositioning: "review", suggestedResponse: "Highlight value", urgency: "medium",
-          sourceUrl: "https://rival.com",
-        },
-        telegramSent: false,
-        slackSent: false,
-      }),
-    })
-    vi.stubGlobal("fetch", mockFetch)
-
+  it("never renders the Pricing Update tab", () => {
     render(<WorkflowPanel />)
-    fireEvent.click(screen.getByText("Pricing Response"))
-    await waitFor(() => expect(screen.getByTestId("pricing-response-competitor-url")).toBeDefined())
-
-    fireEvent.change(screen.getByTestId("pricing-response-competitor-url"), {
-      target: { value: "https://rival.com/pricing" },
-    })
-    fireEvent.click(screen.getByTestId("pricing-response-run-btn"))
-
-    await waitFor(() => { expect(mockFetch).toHaveBeenCalledOnce() })
-    const [url] = mockFetch.mock.calls[0] as [string]
-    expect(url).toContain("/api/workflows/pricing-response")
-  })
-})
-
-// ─── Prospect Brief Tab ───────────────────────────────────────────────────────
-
-describe("WorkflowPanel — Prospect Brief tab", () => {
-  afterEach(() => { vi.unstubAllGlobals() })
-
-  it("renders prospect URL input", async () => {
-    render(<WorkflowPanel />)
-    fireEvent.click(screen.getByText("Prospect Brief"))
-    await waitFor(() => expect(screen.getByTestId("prospect-brief-url")).toBeDefined())
-  })
-
-  it("calls prospect-enrichment API route", async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        brief: {
-          companyName: "TechFlow", description: "desc", icpFit: "high",
-          keySignals: ["sig1", "sig2"], outreachAngle: "angle", confidence: "high",
-          sourceUrl: "https://techflow.com",
-        },
-        telegramSent: false,
-        slackSent: false,
-      }),
-    })
-    vi.stubGlobal("fetch", mockFetch)
-
-    render(<WorkflowPanel />)
-    fireEvent.click(screen.getByText("Prospect Brief"))
-    await waitFor(() => expect(screen.getByTestId("prospect-brief-url")).toBeDefined())
-
-    fireEvent.change(screen.getByTestId("prospect-brief-url"), {
-      target: { value: "https://techflow.com" },
-    })
-    fireEvent.click(screen.getByTestId("prospect-brief-run-btn"))
-
-    await waitFor(() => { expect(mockFetch).toHaveBeenCalledOnce() })
-    const [url] = mockFetch.mock.calls[0] as [string]
-    expect(url).toContain("/api/workflows/prospect-enrichment")
-  })
-})
-
-// ─── Funding Alert Tab ────────────────────────────────────────────────────────
-
-describe("WorkflowPanel — Funding Alert tab", () => {
-  afterEach(() => { vi.unstubAllGlobals() })
-
-  it("renders funding URL input", async () => {
-    render(<WorkflowPanel />)
-    fireEvent.click(screen.getByText("Funding Alert"))
-    await waitFor(() => expect(screen.getByTestId("funding-alert-url")).toBeDefined())
-  })
-
-  it("calls funding-alert API route", async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        brief: {
-          programName: "Startup India", provider: "DPIIT", deadline: "2026-05-20",
-          isUrgent: true, eligibility: "DPIIT registered", fitReason: "Great match",
-          applyUrl: "https://grants.gov",
-        },
-        telegramSent: false,
-      }),
-    })
-    vi.stubGlobal("fetch", mockFetch)
-
-    render(<WorkflowPanel />)
-    fireEvent.click(screen.getByText("Funding Alert"))
-    await waitFor(() => expect(screen.getByTestId("funding-alert-url")).toBeDefined())
-
-    fireEvent.change(screen.getByTestId("funding-alert-url"), {
-      target: { value: "https://grants.gov" },
-    })
-    fireEvent.click(screen.getByTestId("funding-alert-run-btn"))
-
-    await waitFor(() => { expect(mockFetch).toHaveBeenCalledOnce() })
-    const [url] = mockFetch.mock.calls[0] as [string]
-    expect(url).toContain("/api/workflows/funding-alert")
-  })
-})
-
-// ─── Pricing Update Tab ───────────────────────────────────────────────────────
-
-describe("WorkflowPanel — Pricing Update tab", () => {
-  afterEach(() => { vi.unstubAllGlobals() })
-
-  it("renders pricing update inputs", async () => {
-    render(<WorkflowPanel />)
-    fireEvent.click(screen.getByText("Pricing Update"))
-    await waitFor(() => expect(screen.getByTestId("pricing-update-price")).toBeDefined())
-    expect(screen.getByTestId("pricing-update-reason")).toBeDefined()
-  })
-
-  it("shows approval warning", async () => {
-    render(<WorkflowPanel />)
-    fireEvent.click(screen.getByText("Pricing Update"))
-    await waitFor(() => expect(screen.getByText(/requires explicit approval/i)).toBeDefined())
-  })
-
-  it("preview button calls API with approved=false", async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        variantId: "var-123",
-        oldPriceCents: 2900,
-        newPriceCents: 4900,
-        applied: false,
-        previewOnly: true,
-        reason: "test",
-      }),
-    })
-    vi.stubGlobal("fetch", mockFetch)
-
-    render(<WorkflowPanel />)
-    fireEvent.click(screen.getByText("Pricing Update"))
-    await waitFor(() => expect(screen.getByTestId("pricing-update-price")).toBeDefined())
-
-    fireEvent.change(screen.getByTestId("pricing-update-price"), { target: { value: "49" } })
-    fireEvent.click(screen.getByTestId("pricing-update-preview-btn"))
-
-    await waitFor(() => { expect(mockFetch).toHaveBeenCalledOnce() })
-
-    const [url, opts] = mockFetch.mock.calls[0] as [string, RequestInit]
-    expect(url).toContain("/api/workflows/update-pricing")
-    const body = JSON.parse(opts.body as string) as { approved: boolean; newPriceCents: number }
-    expect(body.approved).toBe(false)
-    expect(body.newPriceCents).toBe(4900)
-  })
-
-  it("shows Confirm & Execute button after preview", async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        variantId: "var-123", oldPriceCents: 2900, newPriceCents: 4900,
-        applied: false, previewOnly: true, reason: "test",
-      }),
-    })
-    vi.stubGlobal("fetch", mockFetch)
-
-    render(<WorkflowPanel />)
-    fireEvent.click(screen.getByText("Pricing Update"))
-    await waitFor(() => expect(screen.getByTestId("pricing-update-price")).toBeDefined())
-
-    fireEvent.change(screen.getByTestId("pricing-update-price"), { target: { value: "49" } })
-    fireEvent.click(screen.getByTestId("pricing-update-preview-btn"))
-
-    await waitFor(() => {
-      expect(screen.getByTestId("pricing-update-confirm-btn")).toBeDefined()
-    })
-  })
-
-  it("Confirm & Execute calls API with approved=true", async () => {
-    let callCount = 0
-    const mockFetch = vi.fn().mockImplementation(async () => {
-      callCount++
-      return {
-        ok: true,
-        json: async () => ({
-          variantId: "var-123", oldPriceCents: 2900, newPriceCents: 4900,
-          applied: callCount >= 2, previewOnly: callCount < 2, reason: "test",
-        }),
-      }
-    })
-    vi.stubGlobal("fetch", mockFetch)
-
-    render(<WorkflowPanel />)
-    fireEvent.click(screen.getByText("Pricing Update"))
-    await waitFor(() => expect(screen.getByTestId("pricing-update-price")).toBeDefined())
-
-    fireEvent.change(screen.getByTestId("pricing-update-price"), { target: { value: "49" } })
-    fireEvent.click(screen.getByTestId("pricing-update-preview-btn"))
-
-    await waitFor(() => {
-      expect(screen.getByTestId("pricing-update-confirm-btn")).toBeDefined()
-    })
-
-    fireEvent.click(screen.getByTestId("pricing-update-confirm-btn"))
-
-    await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledTimes(2)
-    })
-
-    const [, opts] = mockFetch.mock.calls[1] as [string, RequestInit]
-    const body = JSON.parse(opts.body as string) as { approved: boolean }
-    expect(body.approved).toBe(true)
+    expect(screen.queryByText("Pricing Update")).toBeNull()
   })
 })

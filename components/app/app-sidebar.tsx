@@ -10,6 +10,7 @@ import {
   Settings,
   Zap,
   Workflow,
+  User,
 } from "lucide-react"
 import {
   Sidebar,
@@ -50,6 +51,11 @@ const navItems = [
     href: "/app/workflows",
     label: "Workflows",
     icon: Workflow,
+  },
+  {
+    href: "/app/profile",
+    label: "Profile",
+    icon: User,
   },
 ]
 
