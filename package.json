@@ -4,6 +4,9 @@
   "private": true,
   "description": "Founder intelligence platform — monitor competitors, research prospects, and discover funding from one shared command center.",
   "license": "MIT",
+  "pnpm": {
+    "onlyBuiltDependencies": ["unrs-resolver"]
+  },
   "scripts": {
     "build": "next build",
     "dev": "next dev",
