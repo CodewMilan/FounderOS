@@ -124,6 +124,15 @@ export async function sendDevTicket(data: DevTicketData): Promise<SlackSendResul
 
 /**
  * Build Block Kit blocks for a Feature Gap alert with a "Create Dev Ticket" button.
+ *
+ * The "Create Dev Ticket" button uses Slack Block Kit interactivity.
+ * When clicked, Slack POSTs a block_actions payload to the configured
+ * Interactivity Request URL, which must point to:
+ *   POST /api/slack/interactions
+ *
+ * The button value carries a compact JSON representation of the ticket data
+ * (≤ 2000 chars per Slack's limit). The interactions endpoint parses it and
+ * calls runDevTicketWorkflow to create the ticket.
  */
 export function buildFeatureGapBlocks(
   brief: {
@@ -138,8 +147,6 @@ export function buildFeatureGapBlocks(
   },
   devTicketPayload: DevTicketData
 ): SlackBlock[] {
-  const encodedPayload = encodeURIComponent(JSON.stringify(devTicketPayload))
-
   return [
     {
       type: "header",
@@ -179,8 +186,8 @@ export function buildFeatureGapBlocks(
           type: "button",
           text: { type: "plain_text", text: "Create Dev Ticket", emoji: true },
           style: "primary",
-          url: `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/api/workflows/dev-ticket?payload=${encodedPayload}`,
           action_id: "create_dev_ticket",
+          value: JSON.stringify(devTicketPayload),
         },
         {
           type: "button",

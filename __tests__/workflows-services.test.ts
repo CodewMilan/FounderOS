@@ -469,6 +469,17 @@ describe("slackService block builders", () => {
     const blockStr = JSON.stringify(blocks)
     expect(blockStr).toContain("Feature Gap Alert")
     expect(blockStr).toContain("Create Dev Ticket")
+    // Button must use Block Kit interactivity, not a localhost URL
+    expect(blockStr).not.toContain("localhost")
+    expect(blockStr).not.toContain("/api/workflows/dev-ticket")
+    // Button must carry the ticket payload as a value field
+    const actionsBlock = blocks.find((b) => b.type === "actions") as
+      | { elements: Array<Record<string, unknown>> }
+      | undefined
+    const ticketBtn = actionsBlock?.elements.find((el) => el.action_id === "create_dev_ticket")
+    expect(ticketBtn).toBeDefined()
+    expect(typeof ticketBtn?.value).toBe("string")
+    expect(ticketBtn?.url).toBeUndefined()
   })
 
   it("buildPricingResponseBlocks returns blocks with competitor name", async () => {
