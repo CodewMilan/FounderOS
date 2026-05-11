@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet"
-import { RefreshCw, Zap, DollarSign, PlusCircle, GitFork } from "lucide-react"
+import { RefreshCw, DollarSign, PlusCircle, GitFork } from "lucide-react"
 import { AddCompetitorManuallySchema } from "@/lib/schemas/competitor-intel"
 
 interface Props {

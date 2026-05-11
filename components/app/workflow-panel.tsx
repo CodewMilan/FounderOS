@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from "react"
 import {
   Loader2,
-  Zap,
+  Play,
+  Workflow,
   CheckCircle2,
   AlertCircle,
   ChevronDown,
@@ -429,7 +430,7 @@ export function WorkflowPanel() {
         <div className="flex items-start justify-between gap-3">
           <div className="flex flex-col gap-0.5">
             <div className="flex items-center gap-2">
-              <Zap className="size-3.5 text-[#37322F]" />
+              <Workflow className="size-3.5 text-[#37322F]" />
               <span className="text-sm font-semibold text-[#37322F]">Analyze & Run</span>
             </div>
             <p className="text-xs text-[#605A57]">
@@ -490,7 +491,7 @@ export function WorkflowPanel() {
               {runStatus === "running" ? (
                 <Loader2 className="size-3 animate-spin" />
               ) : (
-                <Zap className="size-3" />
+                <Play className="size-3" />
               )}
               {runStatus === "running" ? "Running…" : "Analyze & Run"}
             </button>

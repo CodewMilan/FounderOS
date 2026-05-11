@@ -12,7 +12,7 @@ import {
   RefreshCw,
   Loader2,
   ChevronRight,
-  Zap,
+  ListTodo,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -152,9 +152,9 @@ const MODULE_ICONS: Record<RecommendedAction["module"], React.ReactNode> = {
 }
 
 const MODULE_HREFS: Record<RecommendedAction["module"], string> = {
-  competitors: "/competitors",
-  prospects: "/prospects",
-  funding: "/funding",
+  competitors: "/app/competitors",
+  prospects: "/app/prospects",
+  funding: "/app/funding",
 }
 
 // ─── KPI Card ─────────────────────────────────────────────────────────────────
@@ -324,7 +324,7 @@ export function DashboardClient({ initialAggregate }: DashboardClientProps) {
             label="Competitor changes"
             value={stats.competitorChanges}
             sub={`${stats.highSeverityChanges} high priority`}
-            href="/competitors"
+            href="/app/competitors"
             sparkline={trends.weeklyCompetitorCounts}
             pill={
               trends.weeklyCompetitorTotal > 0 ? (
@@ -337,7 +337,7 @@ export function DashboardClient({ initialAggregate }: DashboardClientProps) {
             label="High-priority signals"
             value={stats.highSeverityChanges}
             sub="Significance ≥ 80"
-            href="/competitors"
+            href="/app/competitors"
             scoreBar={
               stats.competitorChanges > 0
                 ? Math.round((stats.highSeverityChanges / stats.competitorChanges) * 100)
@@ -349,7 +349,7 @@ export function DashboardClient({ initialAggregate }: DashboardClientProps) {
             label="Top prospects"
             value={stats.topProspects}
             sub={`Avg fit ${trends.avgProspectFitScore}%`}
-            href="/prospects"
+            href="/app/prospects"
             scoreBar={trends.avgProspectFitScore}
           />
           <KpiCard
@@ -357,7 +357,7 @@ export function DashboardClient({ initialAggregate }: DashboardClientProps) {
             label="Deadlines ≤ 60 days"
             value={stats.upcomingDeadlines}
             sub={`of ${stats.fundingOpportunities} opportunities`}
-            href="/funding"
+            href="/app/funding"
             pill={
               trends.nonDilutiveFundingCount > 0 ? (
                 <span className="inline-flex items-center rounded-full border border-[rgba(55,50,47,0.12)] bg-[rgba(55,50,47,0.04)] px-1.5 py-0.5 text-[10px] font-medium text-[#605A57]">
@@ -416,7 +416,7 @@ export function DashboardClient({ initialAggregate }: DashboardClientProps) {
       {!scanning && recommendedActions.length > 0 && (
         <div className="flex flex-col gap-3" data-testid="recommended-actions">
           <div className="flex items-center gap-2 text-sm font-semibold text-[#37322F]">
-            <Zap className="size-4" />
+            <ListTodo className="size-4" />
             Recommended actions
             {highPriorityActions > 0 && (
               <span className="ml-auto inline-flex items-center rounded-full border border-[rgba(55,50,47,0.12)] bg-[rgba(55,50,47,0.04)] px-1.5 py-0.5 text-xs font-medium text-[#605A57]">
@@ -448,7 +448,7 @@ export function DashboardClient({ initialAggregate }: DashboardClientProps) {
           <SectionHeader
             icon={<Radar className="size-3.5" />}
             label="Competitor radar"
-            href="/competitors"
+            href="/app/competitors"
             count={topCompetitorChanges.length}
           />
           {scanning ? (
@@ -460,7 +460,7 @@ export function DashboardClient({ initialAggregate }: DashboardClientProps) {
           ) : topCompetitorChanges.length === 0 ? (
             <EmptySection
               message="No competitor changes detected yet. Add competitor sources to get started."
-              href="/competitors"
+              href="/app/competitors"
               linkLabel="Add competitor sources"
             />
           ) : (
@@ -515,7 +515,7 @@ export function DashboardClient({ initialAggregate }: DashboardClientProps) {
           <SectionHeader
             icon={<Users className="size-3.5" />}
             label="Top prospects"
-            href="/prospects"
+            href="/app/prospects"
             count={hotProspects.length}
           />
           {scanning ? (
@@ -527,7 +527,7 @@ export function DashboardClient({ initialAggregate }: DashboardClientProps) {
           ) : hotProspects.length === 0 ? (
             <EmptySection
               message="No high-fit prospects yet. Analyze companies to find buying signals."
-              href="/prospects"
+              href="/app/prospects"
               linkLabel="Analyze a company"
             />
           ) : (
@@ -574,7 +574,7 @@ export function DashboardClient({ initialAggregate }: DashboardClientProps) {
           <SectionHeader
             icon={<Banknote className="size-3.5" />}
             label="Funding deadlines"
-            href="/funding"
+            href="/app/funding"
             count={urgentFunding.length}
           />
           {scanning ? (
@@ -586,7 +586,7 @@ export function DashboardClient({ initialAggregate }: DashboardClientProps) {
           ) : urgentFunding.length === 0 ? (
             <EmptySection
               message="No upcoming funding deadlines in the next 60 days."
-              href="/funding"
+              href="/app/funding"
               linkLabel="View all opportunities"
             />
           ) : (
@@ -651,7 +651,7 @@ export function DashboardClient({ initialAggregate }: DashboardClientProps) {
             {trends.trackedSourcesByModule.funding} funding
           </span>
           <Link
-            href="/settings"
+            href="/app/settings"
             className="text-xs text-[#828387] hover:text-[#37322F] transition-colors"
           >
             Manage →

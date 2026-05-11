@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Send, Loader2, Zap } from "lucide-react"
+import { Send, Loader2, Play, Radar } from "lucide-react"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -124,7 +124,7 @@ export function CompetitorAlertPanel() {
         <div className="flex items-start justify-between gap-3">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
-              <Zap className="size-4 text-[#37322F]" />
+              <Radar className="size-4 text-[#37322F]" />
               <span className="text-base font-semibold text-[#37322F]">
                 Competitor Intelligence Alert
               </span>
@@ -205,7 +205,7 @@ export function CompetitorAlertPanel() {
             {state.status === "running" ? (
               <Loader2 className="size-3 animate-spin" />
             ) : (
-              <Zap className="size-3" />
+              <Play className="size-3" />
             )}
             {state.status === "running" ? "Running…" : "Run workflow"}
           </button>
