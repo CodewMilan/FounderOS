@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
 export function Header() {
@@ -13,8 +14,8 @@ export function Header() {
               <button className="text-[#37322f] hover:text-[#37322f]/80 text-sm font-medium">Docs</button>
             </div>
           </div>
-          <Button variant="ghost" className="text-[#37322f] hover:bg-[#37322f]/5">
-            Log in
+          <Button variant="ghost" className="text-[#37322f] hover:bg-[#37322f]/5" asChild>
+            <Link href="/login">Log in</Link>
           </Button>
         </nav>
       </div>

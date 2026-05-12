@@ -9,6 +9,7 @@
  *   - funding page component renders (maps to /app/funding)
  *   - settings page component renders (maps to /app/settings)
  *   - landing page CTA and nav link point to /app
+ *   - landing page includes a link to /login
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { render, screen } from "@testing-library/react"
@@ -33,6 +34,13 @@ vi.mock("next/link", () => ({
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/app",
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    prefetch: vi.fn(),
+    refresh: vi.fn(),
+  }),
+  useSearchParams: () => new URLSearchParams(),
 }))
 
 vi.mock("@/components/app/signal-detail-sheet", () => ({
@@ -67,6 +75,7 @@ afterEach(() => {
 // ─── Page imports (after mocks) ────────────────────────────────────────────────
 
 import LandingPage from "@/app/page"
+import LoginPage from "@/app/login/page"
 import DashboardPage from "@/app/app/page"
 import CompetitorsPage from "@/app/app/competitors/page"
 import ProspectsPage from "@/app/app/prospects/page"
@@ -87,9 +96,31 @@ describe("Landing page (/ route)", () => {
     expect(appLinks.length).toBeGreaterThan(0)
   })
 
+  it("has a link to /login", () => {
+    render(<LandingPage />)
+    const loginLinks = screen.getAllByRole("link").filter((l) => l.getAttribute("href") === "/login")
+    expect(loginLinks.length).toBeGreaterThan(0)
+  })
+
   it("does not render the product dashboard on the landing page", () => {
     render(<LandingPage />)
     expect(screen.queryByTestId("dashboard-page")).toBeNull()
+  })
+})
+
+// ─── Login page ───────────────────────────────────────────────────────────────
+
+describe("Login page (/login route)", () => {
+  it("renders sign in heading", () => {
+    render(<LoginPage />)
+    expect(screen.getByRole("heading", { name: /sign in/i })).toBeDefined()
+  })
+
+  it("links back to home and open app", () => {
+    render(<LoginPage />)
+    const links = screen.getAllByRole("link")
+    expect(links.some((l) => l.getAttribute("href") === "/")).toBe(true)
+    expect(links.some((l) => l.getAttribute("href") === "/app")).toBe(true)
   })
 })
 
