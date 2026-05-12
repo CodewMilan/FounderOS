@@ -23,10 +23,10 @@ export default function LoginPage() {
                 FounderOS
               </Link>
               <Link
-                href="/app"
+                href="/"
                 className="flex items-center justify-center overflow-hidden rounded-full bg-white px-2 py-1 shadow-[0px_1px_2px_rgba(55,50,47,0.12)] sm:px-3 sm:py-[6px] md:px-[14px]"
               >
-                <span className="text-xs font-medium leading-5 text-[#37322F] md:text-[13px]">Open app</span>
+                <span className="text-xs font-medium leading-5 text-[#37322F] md:text-[13px]">Home</span>
               </Link>
             </div>
           </div>

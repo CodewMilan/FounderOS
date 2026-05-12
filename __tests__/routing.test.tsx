@@ -116,11 +116,10 @@ describe("Login page (/login route)", () => {
     expect(screen.getByRole("heading", { name: /sign in/i })).toBeDefined()
   })
 
-  it("links back to home and open app", () => {
+  it("links back to home", () => {
     render(<LoginPage />)
     const links = screen.getAllByRole("link")
     expect(links.some((l) => l.getAttribute("href") === "/")).toBe(true)
-    expect(links.some((l) => l.getAttribute("href") === "/app")).toBe(true)
   })
 })
 

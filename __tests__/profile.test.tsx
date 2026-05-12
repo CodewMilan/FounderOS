@@ -266,9 +266,18 @@ describe("FounderProfileView", () => {
 describe("ProfilePage", () => {
   beforeEach(() => {
     vi.resetAllMocks()
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({ profile: null }),
+    mockFetch.mockImplementation((input: string | Request) => {
+      const u = typeof input === "string" ? input : input.url
+      if (u.includes("user-profile")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ profile: null, authConfigured: false }),
+        })
+      }
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ profile: null }),
+      })
     })
   })
 

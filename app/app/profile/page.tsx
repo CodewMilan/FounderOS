@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import type { FounderProfile } from "@/lib/schemas/profile"
 import { User } from "lucide-react"
 import { PageHeading } from "@/components/app/page-heading"
+import { PersonalDetailsCard } from "@/components/app/personal-details-card"
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<FounderProfile | null>(null)
@@ -43,6 +44,8 @@ export default function ProfilePage() {
           your workflows.
         </p>
       </div>
+
+      <PersonalDetailsCard />
 
       {loading ? (
         <div className="flex flex-col gap-4">

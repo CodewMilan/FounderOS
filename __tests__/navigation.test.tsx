@@ -4,6 +4,7 @@ import { AppChrome } from "@/components/app/app-chrome"
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/app",
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), prefetch: vi.fn(), refresh: vi.fn() }),
 }))
 
 vi.mock("next/link", () => ({
@@ -77,6 +78,15 @@ describe("AppChrome navigation", () => {
     )
     const home = screen.getByRole("link", { name: /home/i })
     expect(home.getAttribute("href")).toBe("/")
+  })
+
+  it("renders Log out control", () => {
+    render(
+      <AppChrome>
+        <span />
+      </AppChrome>,
+    )
+    expect(screen.getByRole("button", { name: /log out/i })).toBeDefined()
   })
 
   it("renders primary nav sections", () => {

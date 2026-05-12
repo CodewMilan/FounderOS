@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
+import { SignOutButton } from "@/components/app/sign-out-button"
 
 const PRIMARY_NAV = [
   { href: "/app", label: "Dashboard" },
@@ -94,6 +95,7 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
                   </div>
                 </div>
                 <div className="h-6 sm:h-7 md:h-8 flex justify-start items-start gap-2 sm:gap-3 shrink-0">
+                  <SignOutButton />
                   <Link
                     href="/"
                     className="px-2 sm:px-3 md:px-[14px] py-1 sm:py-[6px] bg-white shadow-[0px_1px_2px_rgba(55,50,47,0.12)] overflow-hidden rounded-full flex justify-center items-center"
