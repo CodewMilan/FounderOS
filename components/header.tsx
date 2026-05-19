@@ -1,7 +1,12 @@
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { useSupabaseSignedIn } from "@/hooks/use-supabase-signed-in"
 
 export function Header() {
+  const { ready, signedIn } = useSupabaseSignedIn()
+
   return (
     <header className="w-full border-b border-[#37322f]/6 bg-[#f7f5f3]">
       <div className="max-w-[1060px] mx-auto px-4">
@@ -14,9 +19,11 @@ export function Header() {
               <button className="text-[#37322f] hover:text-[#37322f]/80 text-sm font-medium">Docs</button>
             </div>
           </div>
-          <Button variant="ghost" className="text-[#37322f] hover:bg-[#37322f]/5" asChild>
-            <Link href="/login">Log in</Link>
-          </Button>
+          {ready && !signedIn ? (
+            <Button variant="ghost" className="text-[#37322f] hover:bg-[#37322f]/5" asChild>
+              <Link href="/login">Log in</Link>
+            </Button>
+          ) : null}
         </nav>
       </div>
     </header>
